@@ -1,0 +1,77 @@
+/* seccion 1: introduccion */
+.historia-section-corchos {
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(rgba(30, 20, 15, 0.75), rgba(45, 30, 20, 0.85)), url('https://images.unsplash.com/photo-1596700885141-90a61a6b0c22?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat fixed;
+}
+
+.fade-in-page {
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* seccion 2: catalogo */
+.bg-cork {
+  background-color: #f0ebe1;
+}
+
+.text-earth {
+  color: #2c1e16 !important;
+}
+
+.text-earth-light {
+  color: #4a3627 !important;
+}
+
+.text-muted-earth {
+  color: #7a604f !important;
+}
+
+.corcho-showcase {
+  max-height: 50vh;
+  min-height: 350px;
+  object-fit: contain;
+  animation: fadeSlide 0.5s ease-out;
+  box-shadow: 0 15px 35px rgba(44, 30, 22, 0.15); /* Sombra con un sutil tono marrón */
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.detalles-showcase {
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* flechas */
+.nav-arrow-earth {
+  opacity: 0.4;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    opacity: 0.9;
+    transform: scale(1.1);
+  }
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+/* boton */
+.btn-outline-earth {
+  color: #2c1e16;
+  border: 1px solid #2c1e16;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.btn-hover-earth:hover {
+  background-color: #2c1e16;
+  color: #f0ebe1;
+}

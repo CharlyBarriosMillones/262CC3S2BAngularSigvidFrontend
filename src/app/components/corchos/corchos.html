@@ -1,1 +1,75 @@
-<p>corchos works!</p>
+<!-- seccion 1: introducción -->
+<div class="historia-section-corchos d-flex align-items-center justify-content-center text-center fade-in-page">
+  <div class="container px-4">
+    <p class="text-uppercase text-white-50 letter-spacing-2 mb-3">Guardianes del Tiempo</p>
+    <h1 class="display-3 text-white mb-4 fw-bold font-playfair">El Sello Perfecto</h1>
+    <p class="lead text-light mb-5 fs-5 fw-light mx-auto lh-lg" style="max-width: 800px;">
+      El corcho no es solo un cierre, es el elemento vivo que permite a nuestros vinos respirar 
+      y evolucionar en la botella. Seleccionamos cuidadosamente las mejores cortezas de alcornoque 
+      para garantizar que cada gota mantenga su excelencia hasta llegar a tu copa.
+    </p>
+    <button (click)="scrollToCatalogo()" class="btn btn-outline-light btn-lg px-5 py-3 rounded-0 text-uppercase letter-spacing-2">
+      Explorar Tipos
+    </button>
+  </div>
+</div>
+
+<!-- seccion 2: catalogo -->
+<div id="catalogo-corchos" class="container-fluid px-4 px-md-5 py-5 bg-cork" style="min-height: 100vh;">
+  
+  <div class="text-center mb-5 pt-5">
+    <h2 class="fs-2 text-earth font-playfair mb-3">Materiales de Guarda</h2>
+    <div style="width: 40px; height: 1px; background-color: #4a3627; margin: 0 auto;"></div>
+  </div>
+
+  <div class="row align-items-center justify-content-center mt-3">
+    
+    <!-- flecha izquierda -->
+    <div class="col-2 col-md-1 text-center">
+      <button class="btn btn-link text-earth text-decoration-none p-0 nav-arrow-earth" (click)="anterior()">
+        <i class="bi bi-chevron-left display-6"></i>
+      </button>
+    </div>
+
+    <!-- contenedor Principal -->
+    <div class="col-8 col-md-8">
+      <div class="row align-items-center">
+        
+        <!-- imagen del corcho -->
+        <div class="col-md-5 text-center mb-4 mb-md-0">
+          <img [src]="corchoActual.imagen" class="img-fluid rounded-1 corcho-showcase" [alt]="corchoActual.nombre" [id]="corchoActual.id">
+        </div>
+        
+        <!-- detalles -->
+        <div class="col-md-6 offset-md-1 detalles-showcase">
+          <p class="text-uppercase text-muted-earth letter-spacing-2 mb-1 small">{{ corchoActual.tipo }}</p>
+          <h2 class="display-5 text-earth mb-3 fw-bold font-playfair">{{ corchoActual.nombre }}</h2>
+          <p class="fs-4 text-earth fw-light mb-4">S/ {{ corchoActual.precio | number:'1.2-2' }} <span class="fs-6 text-muted-earth">/ ud</span></p>
+          
+          <div class="mb-3">
+            <h6 class="text-muted-earth text-uppercase letter-spacing-2 small">Especificaciones</h6>
+            <p class="text-earth-light fw-light fs-6 lh-base">{{ corchoActual.descripcion }}</p>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-muted-earth text-uppercase letter-spacing-2 small">Uso Recomendado</h6>
+            <p class="text-earth-light fw-light fs-6 lh-base">{{ corchoActual.uso }}</p>
+          </div>
+
+          <button class="btn btn-outline-earth rounded-0 px-4 py-2 text-uppercase letter-spacing-2 btn-hover-earth btn-sm">
+            Solicitar Lote
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- flecha derecha -->
+    <div class="col-2 col-md-1 text-center">
+      <button class="btn btn-link text-earth text-decoration-none p-0 nav-arrow-earth" (click)="siguiente()">
+        <i class="bi bi-chevron-right display-6"></i>
+      </button>
+    </div>
+
+  </div>
+</div>
