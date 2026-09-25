@@ -1,0 +1,61 @@
+/* seccion 1: historia */
+.historia-section-piscos {
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(rgba(20, 25, 30, 0.7), rgba(45, 55, 65, 0.8)), url('https://images.unsplash.com/photo-1590189182193-1fd44f2b4048?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat fixed;
+}
+
+.fade-in-page {
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* seccion 2: catalogo */
+.bg-silver {
+  background-color: #f4f6f8; /* tono plateado */
+}
+
+.pisco-showcase {
+  max-height: 50vh;
+  min-height: 350px;
+  object-fit: contain;
+  animation: fadeSlide 0.5s ease-out;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.12); 
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.detalles-showcase {
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* flechas */
+.nav-arrow-dark {
+  opacity: 0.4;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    opacity: 0.9;
+    transform: scale(1.1);
+  }
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+/* boton que se suaviza al hover */
+.btn-hover-light {
+  transition: all 0.3s ease;
+  &:hover {
+    background-color: #e2e6ea;
+    color: #000;
+  }
+}

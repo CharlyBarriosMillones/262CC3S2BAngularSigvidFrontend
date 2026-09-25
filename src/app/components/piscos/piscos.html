@@ -1,1 +1,75 @@
-<p>piscos works!</p>
+<!-- seccion 1: historia -->
+<div class="historia-section-piscos d-flex align-items-center justify-content-center text-center fade-in-page">
+  <div class="container px-4">
+    <p class="text-uppercase text-white-50 letter-spacing-2 mb-3">Destilado Bandera</p>
+    <h1 class="display-3 text-white mb-4 fw-bold font-playfair">El Espíritu de la Uva</h1>
+    <p class="lead text-light mb-5 fs-5 fw-light mx-auto lh-lg" style="max-width: 800px;">
+      Transparente como el cristal, pero con un carácter indomable. Nuestro Pisco es el 
+      resultado de la destilación cuidadosa del mosto fresco, capturando la esencia pura 
+      de los valles peruanos en tonos plateados y brillantes.
+    </p>
+    <button (click)="scrollToCatalogo()" class="btn btn-outline-light btn-lg px-5 py-3 rounded-0 text-uppercase letter-spacing-2">
+      Ver Destilados
+    </button>
+  </div>
+</div>
+
+<!-- seccion 2: catalogo -->
+<div id="catalogo-piscos" class="container-fluid px-4 px-md-5 py-5 bg-silver" style="min-height: 100vh;">
+  
+  <div class="text-center mb-5 pt-5">
+    <h2 class="fs-2 text-dark font-playfair mb-3">Colección Cristalina</h2>
+    <div style="width: 40px; height: 1px; background-color: #888; margin: 0 auto;"></div>
+  </div>
+
+  <div class="row align-items-center justify-content-center mt-3">
+    
+    <!-- flecha izquierda -->
+    <div class="col-2 col-md-1 text-center">
+      <button class="btn btn-link text-dark text-decoration-none p-0 nav-arrow-dark" (click)="anterior()">
+        <i class="bi bi-chevron-left display-6"></i>
+      </button>
+    </div>
+
+    <!-- contenedor -->
+    <div class="col-8 col-md-8">
+      <div class="row align-items-center">
+        
+        <!-- imagen del pisco -->
+        <div class="col-md-5 text-center mb-4 mb-md-0">
+          <img [src]="piscoActual.imagen" class="img-fluid rounded-1 pisco-showcase" [alt]="piscoActual.nombre" [id]="piscoActual.id">
+        </div>
+        
+        <!-- detalles -->
+        <div class="col-md-6 offset-md-1 detalles-showcase">
+          <p class="text-uppercase text-muted letter-spacing-2 mb-1 small">{{ piscoActual.cepa }}</p>
+          <h2 class="display-5 text-dark mb-3 fw-bold font-playfair">{{ piscoActual.nombre }}</h2>
+          <p class="fs-4 text-dark fw-light mb-4">S/ {{ piscoActual.precio | number:'1.2-2' }}</p>
+          
+          <div class="mb-3">
+            <h6 class="text-muted text-uppercase letter-spacing-2 small">Notas de Cata</h6>
+            <p class="text-dark fw-light fs-6 lh-base">{{ piscoActual.descripcion }}</p>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-muted text-uppercase letter-spacing-2 small">Maridaje Ideal</h6>
+            <p class="text-dark fw-light fs-6 lh-base">{{ piscoActual.maridaje }}</p>
+          </div>
+
+          <button class="btn btn-outline-dark rounded-0 px-4 py-2 text-uppercase letter-spacing-2 btn-hover-light btn-sm">
+            Añadir a la selección
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- flecha derecha -->
+    <div class="col-2 col-md-1 text-center">
+      <button class="btn btn-link text-dark text-decoration-none p-0 nav-arrow-dark" (click)="siguiente()">
+        <i class="bi bi-chevron-right display-6"></i>
+      </button>
+    </div>
+
+  </div>
+</div>
