@@ -1,0 +1,4 @@
+/* transición lenta del logo en la esquina superior izquierda */
+.logo-transition {
+  transition: opacity 0.4s ease-in-out;
+}

@@ -1,0 +1,51 @@
+<nav class="navbar navbar-dark bg-transparent fixed-top px-4 py-3" style="z-index: 1040;">
+  <div class="container-fluid">
+    <!-- se oculta el logo cuando estamos en el nome y no hemos hecho scroll -->
+    <!-- nombre del proyecto -->
+    <a class="navbar-brand text-uppercase fw-bold text-white fs-3 logo-text logo-transition" 
+       [class.opacity-0]="isHome && !isScrolled"
+       [class.pe-none]="isHome && !isScrolled"
+       routerLink="/">
+      Vitivinícolas <span style="font-weight: 300;">Perú</span>
+    </a>
+
+    <!-- boton de menu -->
+    <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral">
+      <span class="fs-1"><i class="bi bi-list"></i></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Menú Lateral Oscuro -->
+<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">
+  <div class="offcanvas-header border-bottom border-secondary p-4">
+    <h5 class="offcanvas-title text-uppercase fw-light letter-spacing-2" id="menuLateralLabel">Descubre</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body p-5 d-flex flex-column justify-content-center">
+    <!-- catalogo -->
+    <ul class="navbar-nav fs-2 fw-light" style="gap: 1.5rem;">
+      <li class="nav-item">
+        <a class="nav-link text-white nav-hover" routerLink="/" data-bs-dismiss="offcanvas">Inicio</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white nav-hover" routerLink="/vinos" data-bs-dismiss="offcanvas">Vinos</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white nav-hover" routerLink="/piscos" data-bs-dismiss="offcanvas">Piscos</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white nav-hover" routerLink="/corchos" data-bs-dismiss="offcanvas">Corchos</a>
+      </li>
+    </ul>
+
+    <!-- login y creditos -->
+    <div class="mt-auto pt-5 border-top border-secondary text-secondary fs-6">
+      <a routerLink="/login" class="text-white text-decoration-none d-inline-flex align-items-center mb-3 nav-hover w-auto" data-bs-dismiss="offcanvas">
+        <i class="bi bi-person-circle fs-4 me-3"></i> 
+        <span class="fs-5 fw-light">Iniciar sesión</span>
+      </a>
+      <p class="mb-0">SIGVID - Sistema de Gestión</p>
+    </div>
+  </div>
+</div>

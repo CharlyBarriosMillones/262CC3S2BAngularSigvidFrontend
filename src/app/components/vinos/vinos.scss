@@ -1,0 +1,26 @@
+.product-card {
+  cursor: pointer;
+  
+  .img-container {
+    height: 400px; /* que todas las imagenes tengan mismo tamaño */
+    background-color: #111; /* si la imagen tarda en cargar colocamos fondo oscuro de forma sutil*/
+    
+    .product-img {
+      height: 100%;
+      width: 100%;
+      object-fit: cover; /* que la imagen no se deforme */
+      transition: transform 0.6s ease;
+    }
+  }
+
+  /* efecto al pasar el mouse sobre la tarjeta */
+  &:hover {
+    .product-img {
+      transform: scale(1.08); /* acerca la imagen*/
+    }
+    .btn-outline-light {
+      background-color: #fff;
+      color: #000;
+    }
+  }
+}

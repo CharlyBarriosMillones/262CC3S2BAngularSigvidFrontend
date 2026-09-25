@@ -1,0 +1,33 @@
+<div class="container-fluid px-5" style="padding-top: 120px; padding-bottom: 80px;">
+  <div class="text-center mb-5">
+    <h2 class="display-4 text-white letter-spacing-2">Nuestros Vinos</h2>
+    <p class="text-white-50 fs-5 fw-light">La máxima expresión de nuestro terroir</p>
+  </div>
+
+  <!-- cuadricula de Bootstrap -->
+  <div class="row row-cols-1 row-cols-md-3 g-5">
+    
+    <!-- iteramos sobre nuestra lista de vinos -->
+    @for (vino of listaVinos; track vino.id) {
+      <div class="col">
+        <div class="card h-100 bg-transparent border-0 text-center product-card">
+          <!-- contenedor de efectos para la imagen -->
+          <div class="img-container mb-4 overflow-hidden rounded-1">
+            <img [src]="vino.imagen" class="card-img-top product-img" [alt]="vino.nombre">
+          </div>
+          
+          <div class="card-body p-0">
+            <p class="text-uppercase text-white-50 small letter-spacing-2 mb-1">{{ vino.cepa }}</p>
+            <h4 class="card-title text-white mb-3">{{ vino.nombre }}</h4>
+            <p class="fs-5 text-white fw-light">S/ {{ vino.precio | number:'1.2-2' }}</p>
+            
+            <button class="btn btn-outline-light rounded-0 px-4 mt-2 text-uppercase btn-sm letter-spacing-2">
+              Ver Detalles
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+    
+  </div>
+</div>
