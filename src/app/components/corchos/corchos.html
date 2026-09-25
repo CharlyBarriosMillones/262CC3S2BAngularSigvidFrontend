@@ -18,7 +18,7 @@
 <div id="catalogo-corchos" class="container-fluid px-4 px-md-5 py-5 bg-cork" style="min-height: 100vh;">
   
   <div class="text-center mb-5 pt-5">
-    <h2 class="fs-2 text-earth font-playfair mb-3">Materiales de Guarda</h2>
+    <h2 class="fs-2 text-earth font-playfair mb-3">Sellos de Origen</h2>
     <div style="width: 40px; height: 1px; background-color: #4a3627; margin: 0 auto;"></div>
   </div>
 
@@ -32,16 +32,22 @@
     </div>
 
     <!-- contenedor Principal -->
-    <div class="col-8 col-md-8">
-      <div class="row align-items-center">
+    <div class="col-12 col-md-10">
+      <div class="row align-items-center justify-content-center">
         
         <!-- imagen del corcho -->
-        <div class="col-md-5 text-center mb-4 mb-md-0">
+        <!-- justify-content-end para pegar el corcho la derecha -->
+        <div class="col-md-5 text-center mb-4 mb-md-0 position-relative z-1 d-flex justify-content-center justify-content-md-end pe-md-4">
+          
+          <!-- texto en el fondo (left: centrarlo con el corcho) -->
+          <div class="watermark-text text-uppercase user-select-none" style="left: 35%;">Corcho</div>
+          
           <img [src]="corchoActual.imagen" class="img-fluid rounded-1 corcho-showcase" [alt]="corchoActual.nombre" [id]="corchoActual.id">
         </div>
         
         <!-- detalles -->
-        <div class="col-md-6 offset-md-1 detalles-showcase">
+        <!-- ps-md-4 para una separacion sutil -->
+        <div class="col-md-6 detalles-showcase ps-md-4">
           <p class="text-uppercase text-muted-earth letter-spacing-2 mb-1 small">{{ corchoActual.tipo }}</p>
           <h2 class="display-5 text-earth mb-3 fw-bold font-playfair">{{ corchoActual.nombre }}</h2>
           <p class="fs-4 text-earth fw-light mb-4">S/ {{ corchoActual.precio | number:'1.2-2' }} <span class="fs-6 text-muted-earth">/ ud</span></p>

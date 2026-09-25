@@ -18,7 +18,7 @@ export class Vinos implements OnInit {
       precio: 85.00,
       descripcion: 'Vino de color rojo rubí intenso. En nariz presenta aromas a frutos rojos maduros, ciruela y sutiles toques de vainilla aportados por su crianza en barrica de roble francés.',
       maridaje: 'Ideal para acompañar carnes rojas a la parrilla, pastas con salsas intensas y quesos maduros.',
-      imagen: 'https://images.unsplash.com/photo-1584916201218-f4242ceb4809?q=80&w=600&auto=format&fit=crop'
+      imagen: 'images/vino_malbec.webp'
     },
     {
       id: 2,
@@ -27,7 +27,7 @@ export class Vinos implements OnInit {
       precio: 95.50,
       descripcion: 'Estructura firme y color profundo. Destacan notas de mora, chocolate negro y especias. Un vino con gran presencia en boca y final persistente.',
       maridaje: 'Perfecto con cordero asado, carnes de caza y estofados de larga cocción.',
-      imagen: 'https://images.unsplash.com/photo-1586441444096-b518eaa19b59?q=80&w=600&auto=format&fit=crop'
+      imagen: 'images/vino_tannat.webp'
     },
     {
       id: 3,
@@ -36,7 +36,7 @@ export class Vinos implements OnInit {
       precio: 70.00,
       descripcion: 'Fresco, elegante y vibrante. Resaltan notas cítricas, durazno blanco y toques minerales. Acidez equilibrada que aporta una frescura excepcional.',
       maridaje: 'Excelente compañero de pescados, mariscos frescos, ceviche peruano y ensaladas de verano.',
-      imagen: 'https://images.unsplash.com/photo-1594631252845-29bfc41f0980?q=80&w=600&auto=format&fit=crop'
+      imagen: 'images/vino_blancos.webp'
     }
   ];
 

@@ -19,7 +19,7 @@
   
   <!-- titulo -->
   <div class="text-center mb-5 pt-5">
-    <h2 class="fs-2 text-white font-playfair mb-3">Selección Premium</h2>
+    <h2 class="fs-2 text-white font-playfair mb-3">Alma de Viñedo</h2>
     <div style="width: 40px; height: 1px; background-color: #555; margin: 0 auto;"></div>
   </div>
 
@@ -32,17 +32,23 @@
       </button>
     </div>
 
-    <!-- contenedor -->
-    <div class="col-8 col-md-8">
-      <div class="row align-items-center">
+    <!-- contenedor (col-10 para más espacio) -->
+    <div class="col-12 col-md-10">
+      <div class="row align-items-center justify-content-center">
         
-        <!-- Imagen del Vino -->
-        <div class="col-md-5 text-center mb-4 mb-md-0">
+        <!-- imagen del Vino -->
+        <!-- justify-content-end para pegar la botella a la derecha -->
+        <div class="col-md-5 text-center mb-4 mb-md-0 position-relative z-1 d-flex justify-content-center justify-content-md-end pe-md-4">
+          
+          <!-- texto en el fondo (left: centrarlo con la botella) -->
+          <div class="watermark-text text-uppercase user-select-none" style="left: 35%;">Vino</div>
+          
           <img [src]="vinoActual.imagen" class="img-fluid rounded-1 vino-showcase" [alt]="vinoActual.nombre" [id]="vinoActual.id">
         </div>
         
-        <!-- detalles -->
-        <div class="col-md-6 offset-md-1 detalles-showcase">
+        <!-- Detalles -->
+        <!-- ps-md-4 para una separacion sutil -->
+        <div class="col-md-6 detalles-showcase ps-md-4">
           <p class="text-uppercase text-white-50 letter-spacing-2 mb-1 small">{{ vinoActual.cepa }}</p>
           <h2 class="display-5 text-white mb-3 fw-bold font-playfair">{{ vinoActual.nombre }}</h2>
           <p class="fs-4 text-white fw-light mb-4">S/ {{ vinoActual.precio | number:'1.2-2' }}</p>
