@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
 })
 export class Home {
   
-  // esta funcion hace scroll suave a las categorias
+  // hace scroll a las categorias
   scrollToCategorias() {
     const section = document.getElementById('categorias');
     if (section) {

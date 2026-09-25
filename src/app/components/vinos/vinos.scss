@@ -1,26 +1,60 @@
-.product-card {
-  cursor: pointer;
-  
-  .img-container {
-    height: 400px; /* que todas las imagenes tengan mismo tamaño */
-    background-color: #111; /* si la imagen tarda en cargar colocamos fondo oscuro de forma sutil*/
-    
-    .product-img {
-      height: 100%;
-      width: 100%;
-      object-fit: cover; /* que la imagen no se deforme */
-      transition: transform 0.6s ease;
-    }
-  }
+/* sección 1: historia */
+.historia-section {
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85)), url('https://images.unsplash.com/photo-1550508687-d1a12e245a44?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat fixed;
+}
 
-  /* efecto al pasar el mouse sobre la tarjeta */
+.fade-in-page {
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* sección 2: catálogo */
+.bg-black {
+  background-color: #050505;
+}
+
+.vino-showcase {
+  max-height: 50vh; 
+  min-height: 350px;
+  object-fit: contain;
+  animation: fadeSlide 0.5s ease-out;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.detalles-showcase {
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* elementos comunes */
+.nav-arrow {
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  
   &:hover {
-    .product-img {
-      transform: scale(1.08); /* acerca la imagen*/
-    }
-    .btn-outline-light {
-      background-color: #fff;
-      color: #000;
-    }
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.btn-hover-dark {
+  transition: all 0.3s ease;
+  &:hover {
+    background-color: #fff;
+    color: #000;
   }
 }
