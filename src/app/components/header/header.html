@@ -1,8 +1,16 @@
+<!-- advertencia legal (global) -->
+@if (mostrarAdvertencia) {
+  <div class="legal-warning d-none d-md-block text-uppercase">
+    Tomar bebidas alcohólicas en exceso es dañino
+  </div>
+}
+
+
 <nav class="navbar navbar-dark bg-transparent fixed-top px-4 py-3" style="z-index: 1040;">
   <div class="container-fluid">
     <!-- se oculta el logo cuando estamos en el nome y no hemos hecho scroll -->
     <!-- nombre del proyecto -->
-    <a class="navbar-brand text-uppercase fw-bold text-white fs-3 logo-text logo-transition" 
+    <a class="navbar-brand text-uppercase fw-bold fs-3 logo-text logo-transition" 
        [class.opacity-0]="isHome && !isScrolled"
        [class.pe-none]="isHome && !isScrolled"
        routerLink="/">

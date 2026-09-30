@@ -9,18 +9,6 @@
   animation: fadeIn 1.5s ease-in-out;
 }
 
-.legal-warning {
-  position: fixed; /* no se mueve al scrollear */
-  left: 10px; /* distancia desde el borde izquierdo */
-  top: 10%; /* cantidad de texto centrado (una o dos filas) */
-  transform: translateY(-2%) rotate(180deg); /* lo centra verticalmente y lo gira, (controlar distancia de abajo hacia arriba) */
-  writing-mode: vertical-rl; /* escribe el texto de arriba hacia abajo */
-  letter-spacing: 5px; /* separacion de letras */
-  font-size: 1.4rem; /* tamaño de letra */
-  font-weight: 300;
-  z-index: 1050; /* siempre encima de fotos o textos */
-}
-
 .category-block {
   height: 70vh; /* ocupa 70% del alto de la pantalla */
   min-height: 500px;
