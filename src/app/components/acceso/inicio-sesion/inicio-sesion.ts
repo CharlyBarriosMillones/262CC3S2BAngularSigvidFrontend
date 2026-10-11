@@ -19,7 +19,12 @@ export class InicioSesion {
   });
 
   login(){
-    
+    if(this.form.invalid) return;
+    const {email, password} = this.form.value;
+    if(!email || !password)return;
+
+    alert('Ingreso exitoso')
+    this.router.navigate(['/principal']);
   }
 
   onBack() {
