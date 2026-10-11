@@ -1,1 +1,188 @@
-<p>principal works!</p>
+```html
+<div class="principal-container">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <!-- Marca -->
+    <a class="brand" routerLink="/">
+      <span class="brand-name">VITIVINÍCOLAS</span>
+      <span class="brand-country">PERÚ</span>
+
+      <span class="brand-decoration">
+        ━━━━━ ✦ ━━━━━
+      </span>
+    </a>
+
+    <!-- Menú -->
+    <div class="menu-title">MENÚ</div>
+
+    <ul class="nav flex-column sidebar-menu">
+
+      @for (modulo of user?.modulos; track modulo.idMod) {
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [routerLink]="modulo.url"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
+
+            <span class="menu-icon">
+              <i class="bi bi-grid"></i>
+            </span>
+
+            <span>{{ modulo.descripcion }}</span>
+          </a>
+        </li>
+      }
+
+    </ul>
+
+    <!-- Decoración inferior -->
+    <div class="sidebar-footer">
+      <span>TRADICIÓN</span>
+      <span>EXCELENCIA</span>
+      <span>PASIÓN POR EL VINO</span>
+    </div>
+
+  </aside>
+
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+
+    <!-- Barra superior -->
+    <nav class="topbar">
+
+      <div class="user-info">
+
+        <div class="user-avatar">
+          <i class="bi bi-person-fill"></i>
+        </div>
+
+        <div class="user-details">
+          @if (user) {
+            <strong>{{ user.names }}</strong>
+            <span>{{ user.rol.descripcion }}</span>
+          } @else {
+            <strong>Usuario</strong>
+            <span>Portal de usuario</span>
+          }
+        </div>
+
+      </div>
+
+      <button
+        type="button"
+        class="btn-logout"
+        (click)="logout()">
+
+        <i class="bi bi-box-arrow-right"></i>
+        <span>CERRAR SESIÓN</span>
+
+      </button>
+
+    </nav>
+
+
+    <!-- Área desplazable -->
+    <main class="content-area">
+
+      <!-- Bienvenida -->
+      <section class="welcome-banner">
+
+        <div class="welcome-content">
+
+          <span class="eyebrow">BIENVENIDO</span>
+
+          @if (user) {
+            <h1>Hola, {{ user.names }}</h1>
+          } @else {
+            <h1>Bienvenido a tu portal</h1>
+          }
+
+          <p>
+            Gestiona tus actividades y accede a los módulos
+            disponibles en el sistema.
+          </p>
+
+          <div class="welcome-line"></div>
+
+        </div>
+
+        <div class="banner-overlay"></div>
+
+      </section>
+
+
+      <!-- Funciones -->
+      <section class="functions-section">
+
+        <div class="section-heading">
+          <span class="eyebrow">TUS FUNCIONES</span>
+
+          <h2>Acceso rápido a los módulos</h2>
+
+          <p>
+            Selecciona el módulo al que deseas ingresar.
+          </p>
+        </div>
+
+
+        <!-- Tarjetas dinámicas -->
+        <div class="function-grid">
+
+          @for (modulo of user?.modulos; track modulo.idMod) {
+
+            <a
+              class="function-card"
+              [routerLink]="modulo.url">
+
+              <div class="function-icon">
+                <i class="bi bi-grid-1x2"></i>
+              </div>
+
+              <h3>{{ modulo.descripcion }}</h3>
+
+              <p>
+                Accede a las funciones y herramientas
+                disponibles en este módulo.
+              </p>
+
+              <span class="function-link">
+                INGRESAR
+                <i class="bi bi-arrow-right"></i>
+              </span>
+
+            </a>
+
+          }
+
+        </div>
+
+      </section>
+
+
+      <!-- Contenido de las rutas hijas -->
+      <section class="router-content">
+        <router-outlet></router-outlet>
+      </section>
+
+
+      <!-- Pie -->
+      <footer class="dashboard-footer">
+
+        <span>© VITIVINÍCOLAS PERÚ 2026</span>
+
+        <span>
+          TRADICIÓN · EXCELENCIA · PASIÓN POR EL VINO
+        </span>
+
+      </footer>
+
+    </main>
+
+  </div>
+
+</div>
+```
