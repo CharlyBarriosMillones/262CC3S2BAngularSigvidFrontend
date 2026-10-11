@@ -11,8 +11,8 @@
     <!-- se oculta el logo cuando estamos en el nome y no hemos hecho scroll -->
     <!-- nombre del proyecto -->
     <a class="navbar-brand text-uppercase fw-bold fs-3 logo-text logo-transition" 
-       [class.opacity-0]="isHome && !isScrolled"
-       [class.pe-none]="isHome && !isScrolled"
+      [class.opacity-0]="!isHome || (isHome && !isScrolled)"
+      [class.pe-none]="!isHome || (isHome && !isScrolled)"
        routerLink="/">
       Vitivinícolas <span style="font-weight: 300;">Perú</span>
     </a>
@@ -49,10 +49,12 @@
 
     <!-- login y creditos -->
     <div class="mt-auto pt-5 border-top border-secondary text-secondary fs-6">
+
       <a routerLink="/login" class="text-white text-decoration-none d-inline-flex align-items-center mb-3 nav-hover w-auto" data-bs-dismiss="offcanvas">
         <i class="bi bi-person-circle fs-4 me-3"></i> 
         <span class="fs-5 fw-light">Iniciar sesión</span>
       </a>
+
       <p class="mb-0">SIGVID - Sistema de Gestión</p>
     </div>
   </div>

@@ -1,0 +1,241 @@
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.login-page {
+  --bg: #202020;
+  --gold: #a89568;
+  --gold-light: #c5b58e;
+  --white: #f5f3ef;
+  --muted: #aaa6a0;
+
+  background-color: var(--bg);
+  color: var(--white);
+  font-family: Arial, Helvetica, sans-serif;
+  padding-top: 35px;
+  padding-bottom: 24px;
+}
+
+/* Marca */
+
+.login-header {
+  margin-bottom: 55px;
+}
+
+.brand {
+  width: 245px;
+  min-height: 150px;
+  padding: 24px 10px;
+  background: #080808;
+  border-bottom: 5px solid var(--gold);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.brand-subtitle {
+  color: var(--gold-light);
+  font-size: 10px;
+  letter-spacing: 5px;
+}
+
+.brand h1 {
+  font-size: clamp(1rem, 3.5vw, 1.5rem);
+  font-weight: 1rem;
+  white-space: nowrap;
+  letter-spacing: 0;
+  margin: 4px 0;
+  max-width: 100%;
+  text-align: center;
+}
+
+.brand h1 span {
+  font-weight: 300;
+}
+
+.brand-caption {
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 4px;
+}
+
+/* Formulario */
+
+.login-container {
+  max-width: 850px;
+}
+
+.login-heading .section-label {
+  color: var(--gold-light);
+  font-size: 11px;
+  letter-spacing: 4px;
+}
+
+.login-heading h2 {
+  font-size: clamp(27px, 5vw, 38px);
+  font-weight: 400;
+  letter-spacing: 2px;
+}
+
+.heading-line {
+  width: 100px;
+  height: 3px;
+  background: var(--white);
+  margin: 15px 0 18px;
+}
+
+.login-heading p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* Etiquetas e inputs Bootstrap */
+
+.login-container .form-label {
+  margin-bottom: 12px;
+  color: var(--gold-light);
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.login-input,
+.login-input:focus {
+  min-height: 60px;
+  padding: 16px;
+  color: var(--white);
+  background-color: transparent;
+  border: 2px solid #e9e7e2;
+  border-radius: 0;
+  font-size: 14px;
+  box-shadow: none;
+}
+
+.login-input::placeholder {
+  color: #85817c;
+  font-size: 12px;
+  font-style: italic;
+  letter-spacing: 1px;
+}
+
+.login-input:focus {
+  border-color: var(--gold-light);
+  background-color: #262626;
+  box-shadow: 0 0 0 2px rgb(197 181 142 / 10%);
+}
+
+.login-input.is-invalid {
+  border-color: #e58b83;
+}
+
+.login-container .invalid-feedback {
+  color: #f0a39b;
+  font-size: 12px;
+}
+
+/* Botones Bootstrap */
+
+.btn-login {
+  min-height: 54px;
+  padding: 14px 22px;
+  color: #171717;
+  background-color: var(--gold-light);
+  border: 1px solid var(--gold-light);
+  border-radius: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-login:hover:not(:disabled) {
+  color: var(--white);
+  background-color: transparent;
+  border-color: var(--gold-light);
+}
+
+.btn-login:disabled {
+  opacity: 0.5;
+}
+
+.btn-back {
+  min-height: 45px;
+  color: var(--muted);
+  background-color: transparent;
+  border: 1px solid #55514a;
+  border-radius: 0;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.btn-back:hover {
+  color: var(--white);
+  border-color: var(--gold-light);
+}
+
+/* Registro */
+
+.login-footer {
+  border-top: 1px solid #4a463e;
+}
+
+.login-footer p {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+
+.login-footer a {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--gold-light);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  color: var(--white);
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+
+/* Pie */
+
+.page-footer {
+  color: #77736c;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+/* Móviles */
+
+@media (max-width: 480px) {
+  .login-page {
+    padding-top: 20px;
+  }
+
+  .login-header {
+    margin-bottom: 35px;
+  }
+
+  .brand {
+    width: 210px;
+    min-height: 130px;
+  }
+
+  .login-input,
+  .login-input:focus {
+    min-height: 54px;
+  }
+
+  .page-footer {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+}
