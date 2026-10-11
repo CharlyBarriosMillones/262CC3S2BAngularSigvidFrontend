@@ -19,22 +19,6 @@
 
     <ul class="nav flex-column sidebar-menu">
 
-      @for (modulo of user?.modulos; track modulo.idMod) {
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            [routerLink]="modulo.url"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }">
-
-            <span class="menu-icon">
-              <i class="bi bi-grid"></i>
-            </span>
-
-            <span>{{ modulo.descripcion }}</span>
-          </a>
-        </li>
-      }
 
     </ul>
 
@@ -61,13 +45,7 @@
         </div>
 
         <div class="user-details">
-          @if (user) {
-            <strong>{{ user.names }}</strong>
-            <span>{{ user.rol.descripcion }}</span>
-          } @else {
-            <strong>Usuario</strong>
-            <span>Portal de usuario</span>
-          }
+
         </div>
 
       </div>
@@ -95,11 +73,7 @@
 
           <span class="eyebrow">BIENVENIDO</span>
 
-          @if (user) {
-            <h1>Hola, {{ user.names }}</h1>
-          } @else {
-            <h1>Bienvenido a tu portal</h1>
-          }
+
 
           <p>
             Gestiona tus actividades y accede a los módulos
@@ -132,31 +106,7 @@
         <!-- Tarjetas dinámicas -->
         <div class="function-grid">
 
-          @for (modulo of user?.modulos; track modulo.idMod) {
-
-            <a
-              class="function-card"
-              [routerLink]="modulo.url">
-
-              <div class="function-icon">
-                <i class="bi bi-grid-1x2"></i>
-              </div>
-
-              <h3>{{ modulo.descripcion }}</h3>
-
-              <p>
-                Accede a las funciones y herramientas
-                disponibles en este módulo.
-              </p>
-
-              <span class="function-link">
-                INGRESAR
-                <i class="bi bi-arrow-right"></i>
-              </span>
-
-            </a>
-
-          }
+          
 
         </div>
 

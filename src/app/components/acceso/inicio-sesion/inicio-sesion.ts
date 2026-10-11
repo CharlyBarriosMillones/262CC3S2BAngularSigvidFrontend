@@ -9,6 +9,7 @@ import { Router, RouterModule } from '@angular/router';
   templateUrl: './inicio-sesion.html',
   styleUrl: './inicio-sesion.scss',
 })
+
 export class InicioSesion {
   router = inject(Router);
   location = inject(Location);
@@ -20,6 +21,7 @@ export class InicioSesion {
 
   login(){
     if(this.form.invalid) return;
+    
     const {email, password} = this.form.value;
     if(!email || !password)return;
 

@@ -1,9 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 
-@Component({
+@ Component({
   selector: 'app-principal',
-  imports: [],
+  imports: [RouterModule],
   templateUrl: './principal.html',
   styleUrl: './principal.scss',
 })
-export class Principal {}
+
+export class Principal implements OnInit{
+  router=inject(Router);
+  
+  ngOnInit(): void {
+    
+  }
+  logout(){
+    this.router.navigate( ['/login']);
+  }
+}
