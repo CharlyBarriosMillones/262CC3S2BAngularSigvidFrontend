@@ -93,15 +93,26 @@
             }
           </div>
 
+          <!-- Alerta de error proveniente del Backend -->
+          @if (errorMessage) {
+            <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">
+              {{ errorMessage }}
+            </div>
+          }
+
           <!-- Botones Bootstrap personalizados -->
           <div class="d-flex flex-column gap-3 mt-5">
 
             <button
               type="submit"
               class="btn btn-login w-100"
-              [disabled]="form.invalid"
+              [disabled]="form.invalid || cargando"
             >
-              INGRESAR <span class="ms-2">→</span>
+              @if (cargando) {
+                VALIDANDO...
+              } @else {
+                INGRESAR <span class="ms-2">→</span>
+              }
             </button>
 
             <button
