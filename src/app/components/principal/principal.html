@@ -1,9 +1,9 @@
 <div class="principal-container">
 
-  <!-- sidebar -->
+  <!-- Sidebar -->
   <aside class="sidebar">
 
-    <!-- marca -->
+    <!-- Marca -->
     <a class="brand" routerLink="/">
       <span class="brand-name">VITIVINÍCOLAS</span>
       <span class="brand-country">PERÚ</span>
@@ -13,13 +13,13 @@
       </span>
     </a>
 
-    <!-- menu -->
+    <!-- Menú -->
     <div class="menu-title">MENÚ</div>
 
     <ul class="nav flex-column sidebar-menu">
       @for (modulo of modulos; track modulo.nombre) {
         <li class="nav-item">
-          <a class="nav-link" [routerLink]="modulo.ruta">
+          <a class="nav-link" href="javascript:void(0)" (click)="abrirModulo(modulo)">
             <span class="menu-icon">
               <i class="bi {{ modulo.icono }}"></i>
             </span>
@@ -29,7 +29,7 @@
       }
     </ul>
 
-    <!-- decoracion inferior -->
+    <!-- Decoración inferior -->
     <div class="sidebar-footer">
       <span>TRADICIÓN</span>
       <span>EXCELENCIA</span>
@@ -39,16 +39,20 @@
   </aside>
 
 
-  <!-- contenido principal -->
+  <!-- Contenido principal -->
   <div class="main-content">
 
     <!-- Barra superior -->
     <nav class="topbar">
 
-      <div class="user-info">
+      <div class="user-info" style="cursor: pointer;" (click)="mostrarPanelPerfil = !mostrarPanelPerfil" title="Haz clic para abrir tu perfil">
 
-        <div class="user-avatar">
-          <i class="bi bi-person-fill"></i>
+        <div class="user-avatar overflow-hidden">
+          @if (fotoPerfilUrl) {
+            <img [src]="fotoPerfilUrl" alt="Avatar de usuario" class="w-100 h-100 object-fit-cover" />
+          } @else {
+            <i class="bi bi-person-fill"></i>
+          }
         </div>
 
         <div class="user-details">
@@ -72,10 +76,10 @@
     </nav>
 
 
-    <!-- area desplazable -->
+    <!-- Área desplazable -->
     <main class="content-area">
 
-      <!-- bienvenida -->
+      <!-- Bienvenida -->
       <section class="welcome-banner">
 
         <div class="welcome-content">
@@ -97,7 +101,7 @@
       </section>
 
 
-      <!-- funciones -->
+      <!-- Funciones -->
       <section class="functions-section">
 
         <div class="section-heading">
@@ -111,15 +115,18 @@
         </div>
 
 
-        <!-- Tarjetas dinámicas -->
+        <!-- tarjetas dinamicas -->
         <div class="function-grid">
           @for (modulo of modulos; track modulo.nombre) {
             <a class="function-card" href="javascript:void(0)" (click)="abrirModulo(modulo)">
               <div class="function-icon">
                 <i class="bi {{ modulo.icono }}"></i>
               </div>
+
               <h3>{{ modulo.nombre }}</h3>
+
               <p>{{ modulo.descripcion }}</p>
+
               <span class="function-link">
                 <span>INGRESAR</span>
                 <i class="bi bi-arrow-right"></i>
@@ -127,9 +134,165 @@
             </a>
           }
         </div>
+
       </section>
 
-      <!-- Panel de Gestión de Usuarios (Se despliega al hacer clic en 'Usuarios y Personal') -->
+      <!-- gestion de perfil de usuario (editar nombre, foto, preferencias y notificaciones) -->
+      @if (mostrarPanelPerfil) {
+        <section class="admin-users-panel mt-5 p-4 rounded-3">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <span class="eyebrow">HU02 · GESTIÓN DE PERFIL DE USUARIO</span>
+              <h3 class="mt-1 mb-0">Mis Datos Básicos, Foto y Preferencias</h3>
+            </div>
+            <button type="button" class="btn-logout" (click)="mostrarPanelPerfil = false">
+              CERRAR PANEL
+            </button>
+          </div>
+
+          <form [formGroup]="formPerfil" (ngSubmit)="guardarCambiosPerfil()" class="row g-4">
+            <!-- carga de foto de perfil (opcional) -->
+            <div class="col-md-4 text-center d-flex flex-column align-items-center justify-content-center border-end border-secondary">
+              <div class="user-avatar mb-3 overflow-hidden" style="width: 105px; height: 105px; font-size: 44px;">
+                @if (fotoPerfilUrl) {
+                  <img [src]="fotoPerfilUrl" alt="Foto de perfil" class="w-100 h-100 object-fit-cover" />
+                } @else {
+                  <i class="bi bi-person-fill"></i>
+                }
+              </div>
+
+              <label class="btn-logout px-3 py-2" style="cursor: pointer;">
+                <i class="bi bi-camera-fill"></i>
+                <span>CARGAR FOTO (OPCIONAL)</span>
+                <input type="file" accept="image/*" class="d-none" (change)="onSeleccionarFotoPerfil($event)" />
+              </label>
+
+              @if (fotoPerfilUrl) {
+                <button type="button" class="btn btn-link text-warning small text-decoration-none mt-1" (click)="fotoPerfilUrl = null">
+                  Quitar foto
+                </button>
+              }
+            </div>
+
+            <!-- editar nombre, preferencias y configuracion de notificaciones por email -->
+            <div class="col-md-8">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small text-warning">NOMBRES *</label>
+                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre" />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small text-warning">APELLIDOS *</label>
+                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido" />
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small text-warning">TELÉFONO</label>
+                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="telefono" />
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small text-warning">COLECCIÓN PREFERIDA</label>
+                  <select class="form-select bg-dark text-white border-secondary" formControlName="preferenciaCategoria">
+                    <option value="Vinos Tintos Gran Reserva">Vinos Tintos Gran Reserva</option>
+                    <option value="Vinos Blancos de Guarda">Vinos Blancos de Guarda</option>
+                    <option value="Piscos Puros y Mosto Verde">Piscos Puros y Mosto Verde</option>
+                    <option value="Corchos Naturales y Microaglomerados">Corchos de Alcornoque</option>
+                  </select>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small text-warning">PREFERENCIA DE MARIDAJE</label>
+                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="preferenciaMaridaje" />
+                </div>
+
+                <!-- configuracion de notificaciones por email -->
+                <div class="col-12 mt-3">
+                  <label class="form-label small text-warning d-block">CONFIGURACIÓN DE NOTIFICACIONES POR EMAIL ({{ usuario?.email }})</label>
+                  <div class="p-3 rounded border border-secondary bg-dark bg-opacity-50 d-flex flex-column gap-2">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="notifEstadoPedidos" formControlName="notifEstadoPedidos" />
+                      <label class="form-check-label small text-light" for="notifEstadoPedidos">
+                        Recibir alertas por correo sobre el estado y despacho de mis pedidos
+                      </label>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="notifPromocionesEmail" formControlName="notifPromocionesEmail" />
+                      <label class="form-check-label small text-light" for="notifPromocionesEmail">
+                        Recibir boletines de ofertas exclusivas y descuentos de temporada
+                      </label>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="notifNuevasCosechas" formControlName="notifNuevasCosechas" />
+                      <label class="form-check-label small text-light" for="notifNuevasCosechas">
+                        Notificarme cuando ingresen nuevas cosechas Gran Reserva e invitaciones a catas
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 mt-3">
+                  <button type="submit" class="btn-logout px-4 py-2" [disabled]="formPerfil.invalid">
+                    <i class="bi bi-check2-circle"></i>
+                    <span>GUARDAR PERFIL Y PREFERENCIAS</span>
+                  </button>
+                </div>
+              </div>
+
+              @if (mensajePerfilExito) {
+                <div class="alert alert-success mt-3 py-2 mb-0">{{ mensajePerfilExito }}</div>
+              }
+            </div>
+          </form>
+        </section>
+      }
+
+      <!-- visualizacion de historial de pedidos (clientes) -->
+      @if (mostrarPanelPedidosCliente && esCliente()) {
+        <section class="admin-users-panel mt-5 p-4 rounded-3">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <span class="eyebrow">HU02 · HISTORIAL DE COMPRAS</span>
+              <h3 class="mt-1 mb-0">Mis Pedidos Realizados</h3>
+            </div>
+            <button type="button" class="btn-logout" (click)="mostrarPanelPedidosCliente = false">
+              CERRAR PANEL
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle small mb-0">
+              <thead>
+                <tr>
+                  <th>CÓDIGO</th>
+                  <th>FECHA DE SOLICITUD</th>
+                  <th>DETALLE DE PRODUCTOS</th>
+                  <th>SUCURSAL</th>
+                  <th>ESTADO</th>
+                  <th>IMPORTE TOTAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pedido of historialPedidosCliente; track pedido.codigoPedido) {
+                  <tr>
+                    <td class="fw-bold text-warning">{{ pedido.codigoPedido }}</td>
+                    <td>{{ pedido.fechaSolicitud }}</td>
+                    <td>{{ pedido.detalle }}</td>
+                    <td>{{ pedido.sucursal }}</td>
+                    <td>
+                      <span class="badge bg-warning text-dark">{{ pedido.estado }}</span>
+                    </td>
+                    <td class="fw-bold">S/ {{ pedido.importeTotal.toFixed(2) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+
+      <!-- panel de gestion de usuarios (se muestra al hacer clic en 'Usuarios y Personal') -->
       @if (mostrarPanelUsuarios && esAdmin()) {
         <section class="admin-users-panel mt-5 p-4 rounded-3">
           <div class="d-flex justify-content-between align-items-center mb-4">
@@ -192,7 +355,7 @@
             <div class="alert alert-danger mt-3 py-2">{{ mensajeError }}</div>
           }
 
-          <!-- Tabla rápida de usuarios registrados en Neon -->
+          <!-- tabla rapida de usuarios registrados en Neon -->
           <div class="table-responsive mt-4">
             <table class="table table-dark table-hover align-middle small mb-0">
               <thead>
