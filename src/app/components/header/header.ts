@@ -13,24 +13,29 @@ export class Header implements OnInit {
   isHome = true;
   isScrolled = false;
   mostrarAdvertencia = false;
-  private router = inject(Router);
+  mostrarHeader = true;
 
+  private router = inject(Router);
   // pantallas en las que se verá la advertencia
   private rutasConAdvertencia = ['/', '/vinos', '/piscos', '/corchos'];
+  // rutas donde no aparece el header
+  private rutasInternas = ['/principal', '/login', '/register'];
 
   ngOnInit() {
-    // verificar si estamos en la portada al cargar la pagina
-    this.isHome = this.router.url === '/';
-    this.mostrarAdvertencia = this.rutasConAdvertencia.includes(this.router.url);
+    this.actualizarEstadoVista(this.router.url);
 
     // saber si el usuario cambia de pagina a través del menu
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      this.isHome = event.urlAfterRedirects === '/';
-      // actualiza si es que la nueva ruta esta en nuestra lista
-      this.mostrarAdvertencia = this.rutasConAdvertencia.includes(event.urlAfterRedirects);
+    ).subscribe((event: NavigationEnd) => {
+      this.actualizarEstadoVista(event.urlAfterRedirects);
     });
+  }
+
+  private actualizarEstadoVista(url: string) {
+    this.isHome = url === '/';
+    this.mostrarAdvertencia = this.rutasConAdvertencia.includes(url);
+    this.mostrarHeader = !this.rutasInternas.some(ruta => url.startsWith(ruta));
   }
 
   // detectar el scroll vertical de la ventana
