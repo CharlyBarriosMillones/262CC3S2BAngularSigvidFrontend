@@ -1,10 +1,9 @@
-```html
 <div class="principal-container">
 
-  <!-- Sidebar -->
+  <!-- sidebar -->
   <aside class="sidebar">
 
-    <!-- Marca -->
+    <!-- marca -->
     <a class="brand" routerLink="/">
       <span class="brand-name">VITIVINÍCOLAS</span>
       <span class="brand-country">PERÚ</span>
@@ -14,15 +13,23 @@
       </span>
     </a>
 
-    <!-- Menú -->
+    <!-- menu -->
     <div class="menu-title">MENÚ</div>
 
     <ul class="nav flex-column sidebar-menu">
-
-
+      @for (modulo of modulos; track modulo.nombre) {
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="modulo.ruta">
+            <span class="menu-icon">
+              <i class="bi {{ modulo.icono }}"></i>
+            </span>
+            <span>{{ modulo.nombre }}</span>
+          </a>
+        </li>
+      }
     </ul>
 
-    <!-- Decoración inferior -->
+    <!-- decoracion inferior -->
     <div class="sidebar-footer">
       <span>TRADICIÓN</span>
       <span>EXCELENCIA</span>
@@ -32,7 +39,7 @@
   </aside>
 
 
-  <!-- Contenido principal -->
+  <!-- contenido principal -->
   <div class="main-content">
 
     <!-- Barra superior -->
@@ -45,7 +52,9 @@
         </div>
 
         <div class="user-details">
-
+          <strong>{{ usuario?.nombre }} {{ usuario?.apellido }}</strong>
+          <span>{{ usuario?.rol }}</span>
+          <span>{{ usuario?.email }}</span>
         </div>
 
       </div>
@@ -63,21 +72,20 @@
     </nav>
 
 
-    <!-- Área desplazable -->
+    <!-- area desplazable -->
     <main class="content-area">
 
-      <!-- Bienvenida -->
+      <!-- bienvenida -->
       <section class="welcome-banner">
 
         <div class="welcome-content">
 
-          <span class="eyebrow">BIENVENIDO</span>
+          <span class="eyebrow">BIENVENIDO · {{ usuario?.rol }}</span>
 
-
+          <h1>Hola, {{ usuario?.nombre }} — {{ tituloPanel }}</h1>
 
           <p>
-            Gestiona tus actividades y accede a los módulos
-            disponibles en el sistema.
+            {{ descripcionPanel }}
           </p>
 
           <div class="welcome-line"></div>
@@ -89,7 +97,7 @@
       </section>
 
 
-      <!-- Funciones -->
+      <!-- funciones -->
       <section class="functions-section">
 
         <div class="section-heading">
@@ -105,21 +113,121 @@
 
         <!-- Tarjetas dinámicas -->
         <div class="function-grid">
-
-          
-
+          @for (modulo of modulos; track modulo.nombre) {
+            <a class="function-card" href="javascript:void(0)" (click)="abrirModulo(modulo)">
+              <div class="function-icon">
+                <i class="bi {{ modulo.icono }}"></i>
+              </div>
+              <h3>{{ modulo.nombre }}</h3>
+              <p>{{ modulo.descripcion }}</p>
+              <span class="function-link">
+                <span>INGRESAR</span>
+                <i class="bi bi-arrow-right"></i>
+              </span>
+            </a>
+          }
         </div>
-
       </section>
 
+      <!-- Panel de Gestión de Usuarios (Se despliega al hacer clic en 'Usuarios y Personal') -->
+      @if (mostrarPanelUsuarios && esAdmin()) {
+        <section class="admin-users-panel mt-5 p-4 rounded-3">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <span class="eyebrow">ADMINISTRACIÓN DE ACCESOS</span>
+              <h3 class="mt-1 mb-0">Registrar Personal o Cliente</h3>
+            </div>
+            <button type="button" class="btn-logout" (click)="mostrarPanelUsuarios = false">
+              CERRAR PANEL
+            </button>
+          </div>
 
-      <!-- Contenido de las rutas hijas -->
+          <form [formGroup]="formNuevoUsuario" (ngSubmit)="crearUsuarioDesdeAdmin()" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label small text-warning">NOMBRES *</label>
+              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombres">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-warning">APELLIDOS *</label>
+              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido" placeholder="Apellidos">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-warning">DNI (8 DÍGITOS) *</label>
+              <input type="text" maxlength="8" class="form-control bg-dark text-white border-secondary" formControlName="dni" placeholder="12345678">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-warning">CORREO ELECTRÓNICO *</label>
+              <input type="email" class="form-control bg-dark text-white border-secondary" formControlName="email" placeholder="usuario@vitivinicolas.pe">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-warning">TELÉFONO</label>
+              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="telefono" placeholder="999888777">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-warning">CONTRASEÑA INICIAL *</label>
+              <input type="password" class="form-control bg-dark text-white border-secondary" formControlName="password" placeholder="Mín. 6 caracteres">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small text-warning">ROL ASIGNADO *</label>
+              <select class="form-select bg-dark text-white border-secondary" formControlName="idRol">
+                <option [ngValue]="null" disabled>Elegir...</option>
+                @for (r of rolesDisponibles; track r.idRol) {
+                  <option [ngValue]="r.idRol">{{ r.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="col-12 mt-3">
+              <button type="submit" class="btn-logout px-4 py-2" [disabled]="formNuevoUsuario.invalid || guardandoUsuario">
+                <i class="bi bi-person-plus-fill"></i>
+                <span>{{ guardandoUsuario ? 'GUARDANDO EN NEON...' : 'CREAR USUARIO' }}</span>
+              </button>
+            </div>
+          </form>
+
+          @if (mensajeExito) {
+            <div class="alert alert-success mt-3 py-2">{{ mensajeExito }}</div>
+          }
+          @if (mensajeError) {
+            <div class="alert alert-danger mt-3 py-2">{{ mensajeError }}</div>
+          }
+
+          <!-- Tabla rápida de usuarios registrados en Neon -->
+          <div class="table-responsive mt-4">
+            <table class="table table-dark table-hover align-middle small mb-0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>NOMBRE COMPLETO</th>
+                  <th>DNI</th>
+                  <th>CORREO</th>
+                  <th>ROL</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of listaUsuarios; track u.idUsuario) {
+                  <tr>
+                    <td>#{{ u.idUsuario }}</td>
+                    <td>{{ u.nombre }} {{ u.apellido }}</td>
+                    <td>{{ u.dni }}</td>
+                    <td>{{ u.email }}</td>
+                    <td><span class="badge bg-warning text-dark">{{ u.nombreRol }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+
+
+      <!-- contenido de las rutas hijas -->
       <section class="router-content">
         <router-outlet></router-outlet>
       </section>
 
 
-      <!-- Pie -->
+      <!-- pie -->
       <footer class="dashboard-footer">
 
         <span>© VITIVINÍCOLAS PERÚ 2026</span>
@@ -135,4 +243,3 @@
   </div>
 
 </div>
-```
