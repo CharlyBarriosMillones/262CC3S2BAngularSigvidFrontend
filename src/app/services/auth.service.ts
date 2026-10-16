@@ -13,6 +13,7 @@ import { UserSesion } from '../model/user-sesion';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly authUrl = `${environment.apiUrl}/auth`;
+  private readonly usuariosUrl = `${environment.apiUrl}/usuarios`;
 
   private readonly TOKEN_KEY = 'sigvid_token';
   private readonly USER_KEY = 'sigvid_user';
@@ -26,6 +27,30 @@ export class AuthService {
   register(datos: RegisterRequest): Observable<UserResponse> {
     return this.http.post<UserResponse>(`${this.authUrl}/register`, datos).pipe(
       tap((response) => this.guardarSesion(response))
+    );
+  }
+
+  // actualizar la contraseña
+  recuperarPassword(datos: { email: string; dni: string; nuevaPassword: string }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.authUrl}/recuperar-password`, datos);
+  }
+
+  // obtener datos de perfil, foto y preferencias
+  obtenerPerfil(email: string): Observable<any> {
+    return this.http.get<any>(`${this.usuariosUrl}/perfil`, { params: { email } });
+  }
+
+  // guardar la edicion de datos del perfil
+  actualizarPerfil(datos: any): Observable<any> {
+    return this.http.put<any>(`${this.usuariosUrl}/perfil`, datos).pipe(
+      tap((actualizado) => {
+        const sesionActual = this.getUsuarioActual();
+        if (sesionActual) {
+          sesionActual.nombre = actualizado.nombre;
+          sesionActual.apellido = actualizado.apellido;
+          localStorage.setItem(this.USER_KEY, JSON.stringify(sesionActual));
+        }
+      })
     );
   }
 
