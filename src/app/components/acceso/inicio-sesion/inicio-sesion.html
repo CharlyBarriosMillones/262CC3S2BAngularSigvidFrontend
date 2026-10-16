@@ -1,7 +1,6 @@
-
 <section class="login-page container-fluid min-vh-100 d-flex flex-column align-items-center px-3">
 
-  <!-- Encabezado / marca -->
+  <!-- encabezado / marca -->
   <header class="login-header text-center">
     <div class="brand">
       <span class="brand-subtitle">BIENVENIDO A</span>
@@ -10,131 +9,277 @@
     </div>
   </header>
 
-  <!-- Contenido principal -->
+  <!-- contenido principal -->
   <main class="login-container w-100">
 
     <div class="row justify-content-center">
       <div class="col-12 col-md-10 col-lg-8 col-xl-7">
 
-        <header class="login-heading mb-4">
-          <span class="section-label">TU CUENTA</span>
-          <h2 class="mt-2">INICIAR SESIÓN</h2>
-          <div class="heading-line"></div>
-          <p>Ingresa tus credenciales para continuar.</p>
-        </header>
+        @if (!modoRecuperacion) {
 
-        <form [formGroup]="form" (ngSubmit)="login()">
+          <header class="login-heading mb-4">
+            <span class="section-label">TU CUENTA</span>
+            <h2 class="mt-2">INICIAR SESIÓN</h2>
+            <div class="heading-line"></div>
+            <p>Ingresa tus credenciales para continuar.</p>
+          </header>
 
-          <!-- Correo -->
-          <div class="mb-4">
-            <label for="email" class="form-label">
-              CORREO ELECTRÓNICO
-            </label>
-
-            <input
-              type="email"
-              id="email"
-              class="form-control login-input"
-              formControlName="email"
-              placeholder="nombre@correo.com"
-              autocomplete="email"
-              [class.is-invalid]="
-                form.controls.email.invalid &&
-                form.controls.email.touched
-              "
-            />
-
-            @if (form.controls.email.touched &&
-                 form.controls.email.hasError('required')) {
-              <div class="invalid-feedback">
-                El correo electrónico es obligatorio.
-              </div>
-            }
-
-            @if (form.controls.email.touched &&
-                 form.controls.email.hasError('email')) {
-              <div class="invalid-feedback">
-                Introduce un correo electrónico válido.
-              </div>
-            }
-          </div>
-
-          <!-- Contraseña -->
-          <div class="mb-4">
-            <label for="passwordPersona" class="form-label">
-              CONTRASEÑA
-            </label>
-
-            <input
-              type="password"
-              id="passwordPersona"
-              class="form-control login-input"
-              formControlName="password"
-              placeholder="Introduce tu contraseña"
-              autocomplete="current-password"
-              [class.is-invalid]="
-                form.controls.password.invalid &&
-                form.controls.password.touched
-              "
-            />
-
-            @if (form.controls.password.touched &&
-                 form.controls.password.hasError('required')) {
-              <div class="invalid-feedback">
-                La contraseña es obligatoria.
-              </div>
-            }
-
-            @if (form.controls.password.touched &&
-                 form.controls.password.hasError('minlength')) {
-              <div class="invalid-feedback">
-                Debe contener al menos 6 caracteres.
-              </div>
-            }
-          </div>
-
-          <!-- Alerta de error proveniente del Backend -->
-          @if (errorMessage) {
-            <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">
-              {{ errorMessage }}
+          @if (successMessage) {
+            <div class="alert alert-success mb-4 py-2 text-center" role="alert">
+              {{ successMessage }}
             </div>
           }
 
-          <!-- Botones Bootstrap personalizados -->
-          <div class="d-flex flex-column gap-3 mt-5">
+          <form [formGroup]="form" (ngSubmit)="login()">
 
-            <button
-              type="submit"
-              class="btn btn-login w-100"
-              [disabled]="form.invalid || cargando"
-            >
-              @if (cargando) {
-                VALIDANDO...
-              } @else {
-                INGRESAR <span class="ms-2">→</span>
+            <!-- correo -->
+            <div class="mb-4">
+              <label for="email" class="form-label">
+                CORREO ELECTRÓNICO
+              </label>
+
+              <input
+                type="email"
+                id="email"
+                class="form-control login-input"
+                formControlName="email"
+                placeholder="nombre@correo.com"
+                autocomplete="email"
+                [class.is-invalid]="
+                  form.controls.email.invalid &&
+                  form.controls.email.touched
+                "
+              />
+
+              @if (form.controls.email.touched &&
+                   form.controls.email.hasError('required')) {
+                <div class="invalid-feedback">
+                  El correo electrónico es obligatorio.
+                </div>
               }
-            </button>
 
-            <button
-              type="button"
-              class="btn btn-back w-100"
-              (click)="onBack()"
-            >
-              VOLVER
-            </button>
+              @if (form.controls.email.touched &&
+                   form.controls.email.hasError('email')) {
+                <div class="invalid-feedback">
+                  Introduce un correo electrónico válido.
+                </div>
+              }
+            </div>
 
-          </div>
+            <!-- contraseña -->
+            <div class="mb-4">
+              <label for="passwordPersona" class="form-label">
+                CONTRASEÑA
+              </label>
 
-        </form>
+              <input
+                type="password"
+                id="passwordPersona"
+                class="form-control login-input"
+                formControlName="password"
+                placeholder="Introduce tu contraseña"
+                autocomplete="current-password"
+                [class.is-invalid]="
+                  form.controls.password.invalid &&
+                  form.controls.password.touched
+                "
+              />
 
-        <!-- Registro -->
-        <footer class="login-footer text-center mt-5 pt-4">
-          <p>¿AÚN NO TIENES UNA CUENTA?</p>
+              @if (form.controls.password.touched &&
+                   form.controls.password.hasError('required')) {
+                <div class="invalid-feedback">
+                  La contraseña es obligatoria.
+                </div>
+              }
 
-          <a routerLink="/register">
-            CREAR UNA CUENTA
-          </a>
-        </footer>
+              @if (form.controls.password.touched &&
+                   form.controls.password.hasError('minlength')) {
+                <div class="invalid-feedback">
+                  Debe contener al menos 6 caracteres.
+                </div>
+              }
+            </div>
+
+            <!-- inicio de sesion y recuperacion de contraseña -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="recordarSesion"
+                  formControlName="recordarSesion"
+                />
+                <label class="form-check-label small text-light" for="recordarSesion">
+                  Mantener sesión iniciada
+                </label>
+              </div>
+
+              <a
+                href="javascript:void(0)"
+                (click)="toggleRecuperacion()"
+                class="small text-warning text-decoration-none">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+
+            <!-- alerta de error que viene del Backend -->
+            @if (errorMessage) {
+              <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">
+                {{ errorMessage }}
+              </div>
+            }
+
+            <!-- botones -->
+            <div class="d-flex flex-column gap-3 mt-5">
+
+              <button
+                type="submit"
+                class="btn btn-login w-100"
+                [disabled]="form.invalid || cargando"
+              >
+                @if (cargando) {
+                  VALIDANDO...
+                } @else {
+                  INGRESAR <span class="ms-2">→</span>
+                }
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-back w-100"
+                (click)="onBack()"
+              >
+                VOLVER
+              </button>
+
+            </div>
+
+          </form>
+
+          <!-- registro -->
+          <footer class="login-footer text-center mt-5 pt-4">
+            <p>¿AÚN NO TIENES UNA CUENTA?</p>
+
+            <a routerLink="/register">
+              CREAR UNA CUENTA
+            </a>
+          </footer>
+
+        } @else {
+
+          <!-- recuperacion de contraseña -->
+          <header class="login-heading mb-4">
+            <span class="section-label">RECUPERACIÓN DE ACCESO</span>
+            <h2 class="mt-2">RESTABLECER CONTRASEÑA</h2>
+            <div class="heading-line"></div>
+            <p>Ingresa tu correo electrónico registrado y tu DNI para validar tu identidad y asignar una nueva clave.</p>
+          </header>
+
+          <form [formGroup]="formRecuperacion" (ngSubmit)="recuperarPassword()">
+
+            <!-- correo que se va a recuperar -->
+            <div class="mb-4">
+              <label for="emailRec" class="form-label">
+                CORREO ELECTRÓNICO REGISTRADO
+              </label>
+              <input
+                type="email"
+                id="emailRec"
+                class="form-control login-input"
+                formControlName="email"
+                placeholder="nombre@correo.com"
+                [class.is-invalid]="
+                  formRecuperacion.controls.email.invalid &&
+                  formRecuperacion.controls.email.touched
+                "
+              />
+              @if (formRecuperacion.controls.email.touched && formRecuperacion.controls.email.invalid) {
+                <div class="invalid-feedback">
+                  Introduce un correo electrónico válido.
+                </div>
+              }
+            </div>
+
+            <!-- DNI de verificacion -->
+            <div class="mb-4">
+              <label for="dniRec" class="form-label">
+                DNI DE VERIFICACIÓN (8 DÍGITOS)
+              </label>
+              <input
+                type="text"
+                id="dniRec"
+                maxlength="8"
+                class="form-control login-input"
+                formControlName="dni"
+                placeholder="12345678"
+                [class.is-invalid]="
+                  formRecuperacion.controls.dni.invalid &&
+                  formRecuperacion.controls.dni.touched
+                "
+              />
+              @if (formRecuperacion.controls.dni.touched && formRecuperacion.controls.dni.invalid) {
+                <div class="invalid-feedback">
+                  Ingresa los 8 dígitos de tu DNI.
+                </div>
+              }
+            </div>
+
+            <!-- nueva contraseña -->
+            <div class="mb-4">
+              <label for="nuevaPass" class="form-label">
+                NUEVA CONTRASEÑA
+              </label>
+              <input
+                type="password"
+                id="nuevaPass"
+                class="form-control login-input"
+                formControlName="nuevaPassword"
+                placeholder="Mínimo 6 caracteres"
+                [class.is-invalid]="
+                  formRecuperacion.controls.nuevaPassword.invalid &&
+                  formRecuperacion.controls.nuevaPassword.touched
+                "
+              />
+              @if (formRecuperacion.controls.nuevaPassword.touched && formRecuperacion.controls.nuevaPassword.invalid) {
+                <div class="invalid-feedback">
+                  Debe contener al menos 6 caracteres.
+                </div>
+              }
+            </div>
+
+            <!-- alerta de error que viene del backend -->
+            @if (errorMessage) {
+              <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">
+                {{ errorMessage }}
+              </div>
+            }
+
+            <!-- botones de recuperacion -->
+            <div class="d-flex flex-column gap-3 mt-5">
+              <button
+                type="submit"
+                class="btn btn-login w-100"
+                [disabled]="formRecuperacion.invalid || cargando"
+              >
+                @if (cargando) {
+                  PROCESANDO...
+                } @else {
+                  ACTUALIZAR CONTRASEÑA <span class="ms-2">→</span>
+                }
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-back w-100"
+                (click)="toggleRecuperacion()"
+              >
+                VOLVER A INICIAR SESIÓN
+              </button>
+            </div>
+
+          </form>
+
+        }
 
       </div>
     </div>
@@ -146,4 +291,3 @@
   </footer>
 
 </section>
-

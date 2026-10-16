@@ -1,6 +1,6 @@
 <section class="login-page container-fluid min-vh-100 d-flex flex-column align-items-center px-3">
 
-  <!-- nncabezado / marca -->
+  <!-- encabezado / marca -->
   <header class="login-header text-center">
     <div class="brand">
       <span class="brand-subtitle">BIENVENIDO A</span>
@@ -21,189 +21,241 @@
           <p>Regístrate como cliente para realizar pedidos y acceder a nuestra colección exclusiva.</p>
         </header>
 
-        <form [formGroup]="form" (ngSubmit)="registrar()">
+        @if (!pasoVerificacionEmail) {
 
-          <div class="row">
-            <!-- nombres -->
-            <div class="col-md-6 mb-4">
-              <label for="nombre" class="form-label">NOMBRES *</label>
-              <input
-                type="text"
-                id="nombre"
-                class="form-control login-input"
-                formControlName="nombre"
-                placeholder="Ej. Carlos Alberto"
-                [class.is-invalid]="form.controls.nombre.invalid && form.controls.nombre.touched"
-              />
-              @if (form.controls.nombre.touched && form.controls.nombre.hasError('required')) {
-                <div class="invalid-feedback">El nombre es obligatorio.</div>
-              }
-            </div>
+          <form [formGroup]="form" (ngSubmit)="iniciarVerificacionEmail()">
 
-            <!-- apellidos -->
-            <div class="col-md-6 mb-4">
-              <label for="apellido" class="form-label">APELLIDOS *</label>
-              <input
-                type="text"
-                id="apellido"
-                class="form-control login-input"
-                formControlName="apellido"
-                placeholder="Ej. Barrios Millones"
-                [class.is-invalid]="form.controls.apellido.invalid && form.controls.apellido.touched"
-              />
-              @if (form.controls.apellido.touched && form.controls.apellido.hasError('required')) {
-                <div class="invalid-feedback">El apellido es obligatorio.</div>
-              }
-            </div>
-          </div>
-
-          <div class="row">
-            <!-- DNI -->
-            <div class="col-md-6 mb-4">
-              <label for="dni" class="form-label">DNI (8 DÍGITOS) *</label>
-              <input
-                type="text"
-                id="dni"
-                maxlength="8"
-                class="form-control login-input"
-                formControlName="dni"
-                placeholder="12345678"
-                [class.is-invalid]="form.controls.dni.invalid && form.controls.dni.touched"
-              />
-              @if (form.controls.dni.touched && form.controls.dni.invalid) {
-                <div class="invalid-feedback">Ingresa un DNI válido de 8 dígitos numéricos.</div>
-              }
-            </div>
-
-            <!-- telefono -->
-            <div class="col-md-6 mb-4">
-              <label for="telefono" class="form-label">TELÉFONO / CELULAR</label>
-              <input
-                type="text"
-                id="telefono"
-                maxlength="15"
-                class="form-control login-input"
-                formControlName="telefono"
-                placeholder="987654321"
-                [class.is-invalid]="form.controls.telefono.invalid && form.controls.telefono.touched"
-              />
-              @if (form.controls.telefono.touched && form.controls.telefono.invalid) {
-                <div class="invalid-feedback">Ingresa solo números (7 a 15 dígitos).</div>
-              }
-            </div>
-          </div>
-
-          <div class="row">
-            <!-- correo -->
-            <div class="col-md-6 mb-4">
-              <label for="email" class="form-label">CORREO ELECTRÓNICO *</label>
-              <input
-                type="email"
-                id="email"
-                class="form-control login-input"
-                formControlName="email"
-                placeholder="cliente@correo.com"
-                [class.is-invalid]="form.controls.email.invalid && form.controls.email.touched"
-              />
-              @if (form.controls.email.touched && form.controls.email.invalid) {
-                <div class="invalid-feedback">Ingresa un correo electrónico válido.</div>
-              }
-            </div>
-
-            <!-- contraseña -->
-            <div class="col-md-6 mb-4">
-              <label for="password" class="form-label">CONTRASEÑA *</label>
-              <input
-                type="password"
-                id="password"
-                class="form-control login-input"
-                formControlName="password"
-                placeholder="Mínimo 6 caracteres"
-                [class.is-invalid]="form.controls.password.invalid && form.controls.password.touched"
-              />
-              @if (form.controls.password.touched && form.controls.password.invalid) {
-                <div class="invalid-feedback">Debe contener al menos 6 caracteres.</div>
-              }
-            </div>
-          </div>
-
-          <!-- boton desplegable para datos de facturacion / direccion -->
-          <div class="mb-4">
-            <button
-              type="button"
-              class="btn btn-back px-3 py-2 w-auto"
-              (click)="toggleDatosEmpresa()">
-              <i class="bi" [class.bi-plus-circle]="!mostrarDatosEmpresa" [class.bi-dash-circle]="mostrarDatosEmpresa"></i>
-              <span class="ms-2">DATOS DE ENVÍO Y FACTURACIÓN RUC (OPCIONAL)</span>
-            </button>
-          </div>
-
-          @if (mostrarDatosEmpresa) {
-            <div class="row p-3 mb-4 border border-secondary bg-dark bg-opacity-25">
-              <div class="col-md-5 mb-3">
-                <label for="ruc" class="form-label">RUC (11 DÍGITOS)</label>
+            <div class="row">
+              <!-- nombres -->
+              <div class="col-md-6 mb-4">
+                <label for="nombre" class="form-label">NOMBRES *</label>
                 <input
                   type="text"
-                  id="ruc"
-                  maxlength="11"
+                  id="nombre"
                   class="form-control login-input"
-                  formControlName="ruc"
-                  placeholder="20123456789"
-                  [class.is-invalid]="form.controls.ruc.invalid && form.controls.ruc.touched"
+                  formControlName="nombre"
+                  placeholder="Ej. Julián"
+                  [class.is-invalid]="form.controls.nombre.invalid && form.controls.nombre.touched"
                 />
-                @if (form.controls.ruc.touched && form.controls.ruc.invalid) {
-                  <div class="invalid-feedback">El RUC debe tener exactamente 11 dígitos.</div>
+                @if (form.controls.nombre.touched && form.controls.nombre.hasError('required')) {
+                  <div class="invalid-feedback">El nombre es obligatorio.</div>
                 }
               </div>
 
-              <div class="col-md-7 mb-3">
-                <label for="razonSocial" class="form-label">RAZÓN SOCIAL</label>
+              <!-- apellidos -->
+              <div class="col-md-6 mb-4">
+                <label for="apellido" class="form-label">APELLIDOS *</label>
                 <input
                   type="text"
-                  id="razonSocial"
+                  id="apellido"
                   class="form-control login-input"
-                  formControlName="razonSocial"
-                  placeholder="Nombre de tu empresa o restaurante"
+                  formControlName="apellido"
+                  placeholder="Ej. Vega Bazan"
+                  [class.is-invalid]="form.controls.apellido.invalid && form.controls.apellido.touched"
                 />
+                @if (form.controls.apellido.touched && form.controls.apellido.hasError('required')) {
+                  <div class="invalid-feedback">El apellido es obligatorio.</div>
+                }
               </div>
+            </div>
 
-              <div class="col-12 mb-2">
-                <label for="direccion" class="form-label">DIRECCIÓN DE ENTREGA</label>
+            <div class="row">
+              <!-- DNI -->
+              <div class="col-md-6 mb-4">
+                <label for="dni" class="form-label">DNI (8 DÍGITOS) *</label>
                 <input
                   type="text"
-                  id="direccion"
+                  id="dni"
+                  maxlength="8"
                   class="form-control login-input"
-                  formControlName="direccion"
-                  placeholder="Av. Principal 123, Distrito, Ciudad"
+                  formControlName="dni"
+                  placeholder="12345678"
+                  [class.is-invalid]="form.controls.dni.invalid && form.controls.dni.touched"
                 />
+                @if (form.controls.dni.touched && form.controls.dni.invalid) {
+                  <div class="invalid-feedback">Ingresa un DNI válido de 8 dígitos numéricos.</div>
+                }
+              </div>
+
+              <!-- telefono -->
+              <div class="col-md-6 mb-4">
+                <label for="telefono" class="form-label">TELÉFONO / CELULAR</label>
+                <input
+                  type="text"
+                  id="telefono"
+                  maxlength="15"
+                  class="form-control login-input"
+                  formControlName="telefono"
+                  placeholder="987654321"
+                  [class.is-invalid]="form.controls.telefono.invalid && form.controls.telefono.touched"
+                />
+                @if (form.controls.telefono.touched && form.controls.telefono.invalid) {
+                  <div class="invalid-feedback">Ingresa solo números (7 a 15 dígitos).</div>
+                }
               </div>
             </div>
-          }
 
-          @if (errorMessage) {
-            <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">
-              {{ errorMessage }}
+            <div class="row">
+              <!-- correo -->
+              <div class="col-md-6 mb-4">
+                <label for="email" class="form-label">CORREO ELECTRÓNICO *</label>
+                <input
+                  type="email"
+                  id="email"
+                  class="form-control login-input"
+                  formControlName="email"
+                  placeholder="cliente@correo.com"
+                  [class.is-invalid]="form.controls.email.invalid && form.controls.email.touched"
+                />
+                @if (form.controls.email.touched && form.controls.email.invalid) {
+                  <div class="invalid-feedback">Ingresa un correo electrónico válido.</div>
+                }
+              </div>
+
+              <!-- contraseña -->
+              <div class="col-md-6 mb-4">
+                <label for="password" class="form-label">CONTRASEÑA *</label>
+                <input
+                  type="password"
+                  id="password"
+                  class="form-control login-input"
+                  formControlName="password"
+                  placeholder="Mínimo 6 caracteres"
+                  [class.is-invalid]="form.controls.password.invalid && form.controls.password.touched"
+                />
+                @if (form.controls.password.touched && form.controls.password.invalid) {
+                  <div class="invalid-feedback">Debe contener al menos 6 caracteres.</div>
+                }
+              </div>
             </div>
-          }
 
-          <div class="d-flex flex-column gap-3 mt-4">
-            <button
-              type="submit"
-              class="btn btn-login w-100"
-              [disabled]="form.invalid || cargando">
-              @if (cargando) {
-                REGISTRANDO CUENTA...
-              } @else {
-                COMPLETAR REGISTRO <span class="ms-2">→</span>
-              }
-            </button>
+            <!-- boton para datos de facturacion / direccion -->
+            <div class="mb-4">
+              <button
+                type="button"
+                class="btn btn-back px-3 py-2 w-auto"
+                (click)="toggleDatosEmpresa()">
+                <i class="bi" [class.bi-plus-circle]="!mostrarDatosEmpresa" [class.bi-dash-circle]="mostrarDatosEmpresa"></i>
+                <span class="ms-2">DATOS DE ENVÍO Y FACTURACIÓN RUC (OPCIONAL)</span>
+              </button>
+            </div>
 
-            <a routerLink="/login" class="btn btn-back w-100 d-flex align-items-center justify-content-center text-decoration-none">
-              YA TENGO UNA CUENTA · INICIAR SESIÓN
-            </a>
+            @if (mostrarDatosEmpresa) {
+              <div class="row p-3 mb-4 border border-secondary bg-dark bg-opacity-25">
+                <div class="col-md-5 mb-3">
+                  <label for="ruc" class="form-label">RUC (11 DÍGITOS)</label>
+                  <input
+                    type="text"
+                    id="ruc"
+                    maxlength="11"
+                    class="form-control login-input"
+                    formControlName="ruc"
+                    placeholder="20123456789"
+                    [class.is-invalid]="form.controls.ruc.invalid && form.controls.ruc.touched"
+                  />
+                  @if (form.controls.ruc.touched && form.controls.ruc.invalid) {
+                    <div class="invalid-feedback">El RUC debe tener exactamente 11 dígitos.</div>
+                  }
+                </div>
+
+                <div class="col-md-7 mb-3">
+                  <label for="razonSocial" class="form-label">RAZÓN SOCIAL</label>
+                  <input
+                    type="text"
+                    id="razonSocial"
+                    class="form-control login-input"
+                    formControlName="razonSocial"
+                    placeholder="Nombre de tu empresa o restaurante"
+                  />
+                </div>
+
+                <div class="col-12 mb-2">
+                  <label for="direccion" class="form-label">DIRECCIÓN DE ENTREGA</label>
+                  <input
+                    type="text"
+                    id="direccion"
+                    class="form-control login-input"
+                    formControlName="direccion"
+                    placeholder="Av. Principal 123, Distrito, Ciudad"
+                  />
+                </div>
+              </div>
+            }
+
+            @if (errorMessage) {
+              <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">
+                {{ errorMessage }}
+              </div>
+            }
+
+            <div class="d-flex flex-column gap-3 mt-4">
+              <button
+                type="submit"
+                class="btn btn-login w-100"
+                [disabled]="form.invalid || cargando">
+                VERIFICAR CORREO Y CONTINUAR <span class="ms-2">→</span>
+              </button>
+
+              <a routerLink="/login" class="btn btn-back w-100 d-flex align-items-center justify-content-center text-decoration-none">
+                YA TENGO UNA CUENTA · INICIAR SESIÓN
+              </a>
+            </div>
+
+          </form>
+
+        } @else {
+
+          <!-- verificar email mediante correo electronico -->
+          <div class="p-4 border border-secondary bg-dark bg-opacity-50 text-center my-4">
+            <span class="section-label d-block mb-2">PASO DE SEGURIDAD · VERIFICACIÓN DE EMAIL</span>
+            <h3 class="fw-light mb-3">Confirma tu correo electrónico</h3>
+            <p class="text-white-50 mb-3">
+              Hemos enviado un código de verificación de 6 dígitos a <strong>{{ form.value.email }}</strong>.
+              <br />
+              <span class="text-warning small">
+                (Código generado para demostración en vivo: <strong>{{ codigoGenerado }}</strong>)
+              </span>
+            </p>
+
+            <div class="mx-auto mb-3" style="max-width: 260px;">
+              <input
+                type="text"
+                maxlength="6"
+                class="form-control login-input text-center fs-4"
+                [formControl]="codigoIngresado"
+                placeholder="000000"
+              />
+            </div>
+
+            @if (errorMessage) {
+              <div class="alert alert-danger mt-3 mb-3 py-2 text-center" role="alert">
+                {{ errorMessage }}
+              </div>
+            }
+
+            <div class="d-flex flex-column gap-3 mt-4">
+              <button
+                type="button"
+                class="btn btn-login w-100"
+                (click)="confirmarCodigoYRegistrar()"
+                [disabled]="codigoIngresado.invalid || cargando">
+                @if (cargando) {
+                  REGISTRANDO CUENTA...
+                } @else {
+                  CONFIRMAR CÓDIGO Y CREAR CUENTA <span class="ms-2">→</span>
+                }
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-back w-100"
+                (click)="pasoVerificacionEmail = false; errorMessage = ''">
+                MODIFICAR DATOS O CORREO
+              </button>
+            </div>
           </div>
 
-        </form>
+        }
 
       </div>
     </div>

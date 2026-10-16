@@ -20,6 +20,11 @@ export class Registro {
   cargando: boolean = false;
   mostrarDatosEmpresa: boolean = false;
 
+  // variables para la verificacion del email mediante correo electronico
+  pasoVerificacionEmail: boolean = false;
+  codigoGenerado: string = '';
+  codigoIngresado = new FormControl('', [Validators.required, Validators.minLength(6)]);
+
   form = new FormGroup({
     nombre: new FormControl('', [Validators.required, Validators.maxLength(50)]),
     apellido: new FormControl('', [Validators.required, Validators.maxLength(50)]),
@@ -36,6 +41,31 @@ export class Registro {
     this.mostrarDatosEmpresa = !this.mostrarDatosEmpresa;
   }
 
+  // generar codigo de verificacion de correo electronico antes de guardar
+  iniciarVerificacionEmail(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.errorMessage = '';
+    this.codigoGenerado = Math.floor(100000 + Math.random() * 900000).toString();
+    this.codigoIngresado.reset('');
+    this.pasoVerificacionEmail = true;
+    this.cdr.detectChanges();
+  }
+
+  // confirmar el codigo enviado al correo y registrar en Neon
+  confirmarCodigoYRegistrar(): void {
+    if (this.codigoIngresado.value?.trim() !== this.codigoGenerado) {
+      this.errorMessage = 'El código de verificación ingresado es incorrecto.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.registrar();
+  }
+
   registrar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -49,7 +79,7 @@ export class Registro {
     this.cargando = true;
     this.cdr.detectChanges();
 
-    // enviamos undefined en campos opcionales que queden vacios por UNIQUE
+    // enviamos undefined en campos opcionales vacios para respetar UNIQUE en la BD
     const payload: RegisterRequest = {
       nombre: val.nombre.trim(),
       apellido: val.apellido.trim(),
