@@ -1,6 +1,9 @@
 export interface Modulo {
+  idMod?: number;
   nombre: string;
   descripcion: string;
+  url: string;
   icono: string;
-  ruta: string;
+  activo?: boolean;
+  ordenOpcion?: number;
 }
