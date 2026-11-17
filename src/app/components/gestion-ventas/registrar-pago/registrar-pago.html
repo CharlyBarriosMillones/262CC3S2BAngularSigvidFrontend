@@ -1,0 +1,178 @@
+<section class="caja-panel p-4 rounded-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <span class="eyebrow">HU05 · MÓDULO DE CAJA Y COBRANZA</span>
+      <h3 class="mt-1 mb-0 text-white">Registrar Pago de Pedido y Control de Caja</h3>
+    </div>
+
+    <div class="p-2 px-3 rounded border border-warning bg-dark">
+      <span class="small text-white-50 d-block">SALDO ACTUAL EN CAJA</span>
+      <strong class="fs-5 text-warning">S/ {{ saldoCajaActual | number:'1.2-2' }}</strong>
+    </div>
+  </div>
+
+  <!-- Buscador de Pedido por Número o DNI del Cliente -->
+  <div class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-end">
+    <div class="col-md-8">
+      <label class="form-label small text-warning">BUSCAR PEDIDO POR CÓDIGO (PED-2026-XXXX) O DNI DEL CLIENTE</label>
+      <input
+        type="text"
+        class="form-control bg-dark text-white border-secondary"
+        placeholder="Ej. PED-2026-0001 o DNI 12345678..."
+        [(ngModel)]="terminoBusqueda"
+        (keyup.enter)="buscarPedidos()" />
+    </div>
+    <div class="col-md-4">
+      <button type="button" class="btn btn-warning w-100 fw-bold" (click)="buscarPedidos()">
+        <i class="bi bi-search me-1"></i> Buscar Pedido
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Tabla de Pedidos -->
+    <div class="col-lg-7">
+      <div class="table-responsive border border-secondary rounded">
+        <table class="table table-dark table-hover align-middle small mb-0">
+          <thead>
+            <tr>
+              <th>CÓDIGO</th>
+              <th>CLIENTE (DNI)</th>
+              <th>IMPORTE</th>
+              <th>ESTADO</th>
+              <th>ACCIÓN</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of pedidosEncontrados; track p.idPedido) {
+              <tr [class.table-active]="pedidoSeleccionado?.idPedido === p.idPedido">
+                <td class="fw-bold text-warning">{{ p.codigoPedido }}</td>
+                <td>{{ p.nombreCliente }} ({{ p.dniCliente }})</td>
+                <td class="fw-bold">S/ {{ p.importeTotal | number:'1.2-2' }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [ngClass]="p.estado === 'Propuesto' ? 'bg-warning text-dark' : 'bg-success'">
+                    {{ p.estado }}
+                  </span>
+                </td>
+                <td>
+                  @if (p.estado === 'Propuesto') {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-warning"
+                      (click)="seleccionarPedido(p)">
+                      Cobrar
+                    </button>
+                  } @else {
+                    <span class="text-white-50 small">Cobrado</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Formulario de Registro de Pago -->
+    <div class="col-lg-5">
+      <div class="p-3 rounded border border-secondary bg-dark">
+        <h6 class="text-warning text-uppercase mb-3">Procesar Cobro</h6>
+
+        @if (!pedidoSeleccionado) {
+          <p class="text-white-50 small mb-0">
+            Selecciona un pedido con estado <strong>Propuesto</strong> en la tabla de la izquierda para registrar su pago.
+          </p>
+        } @else {
+          <div class="mb-3 p-2 rounded bg-secondary bg-opacity-25">
+            <div class="d-flex justify-content-between small">
+              <span>Pedido Seleccionado:</span>
+              <strong class="text-warning">{{ pedidoSeleccionado.codigoPedido }}</strong>
+            </div>
+            <div class="d-flex justify-content-between small mt-1">
+              <span>Cliente:</span>
+              <span>{{ pedidoSeleccionado.nombreCliente }}</span>
+            </div>
+            <div class="d-flex justify-content-between fs-6 fw-bold mt-1 pt-1 border-top border-secondary">
+              <span>Importe a Cobrar:</span>
+              <span class="text-warning">S/ {{ pedidoSeleccionado.importeTotal | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small text-warning">MÉTODO DE PAGO *</label>
+            <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="metodoSeleccionado">
+              <option value="Efectivo">Efectivo</option>
+              <option value="Tarjeta">Tarjeta</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+          </div>
+
+          @if (metodoSeleccionado === 'Efectivo') {
+            <div class="mb-3">
+              <label class="form-label small text-warning">MONTO RECIBIDO EN EFECTIVO (S/) *</label>
+              <input
+                type="number"
+                step="0.50"
+                class="form-control bg-dark text-white border-secondary"
+                [(ngModel)]="montoRecibido" />
+            </div>
+
+            <div class="d-flex justify-content-between p-2 rounded border border-secondary mb-3">
+              <span class="small text-white-50">Vuelto Calculado:</span>
+              <strong class="text-success">S/ {{ vueltoCalculado | number:'1.2-2' }}</strong>
+            </div>
+          } @else {
+            <div class="mb-3">
+              <label class="form-label small text-warning">CÓDIGO DE OPERACIÓN / VOUCHER *</label>
+              <input
+                type="text"
+                class="form-control bg-dark text-white border-secondary"
+                placeholder="Ej. OP-994821"
+                [(ngModel)]="codigoVoucher" />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small text-warning">ADJUNTAR VOUCHER DIGITAL (IMAGEN O PDF) *</label>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                class="form-control form-control-sm bg-dark text-white border-secondary"
+                (change)="onAdjuntarVoucher($event)" />
+              @if (nombreArchivoVoucher) {
+                <small class="text-success d-block mt-1">
+                  <i class="bi bi-paperclip"></i> Archivo listo: {{ nombreArchivoVoucher }}
+                </small>
+              }
+            </div>
+          }
+
+          <button
+            type="button"
+            class="btn btn-warning w-100 fw-bold"
+            [disabled]="procesandoPago"
+            (click)="confirmarPago()">
+            <i class="bi bi-cash-stack me-1"></i>
+            {{ procesandoPago ? 'REGISTRANDO PAGO...' : 'CONFIRMAR PAGO Y ACTUALIZAR CAJA' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (ultimoPago) {
+    <div class="alert alert-success bg-dark text-light border-warning mt-4">
+      <strong class="text-warning">
+        <i class="bi bi-check-circle-fill me-1"></i>
+        Comprobante de Pago #{{ ultimoPago.idPago }} — Pedido {{ ultimoPago.codigoPedido }} actualizado a "{{ ultimoPago.estadoPedido }}"
+      </strong>
+      <p class="small mb-0 mt-1">
+        Método: {{ ultimoPago.metodoPago }} | Vuelto: S/ {{ ultimoPago.vuelto | number:'1.2-2' }} |
+        Nuevo Saldo de Caja: <strong>S/ {{ ultimoPago.nuevoSaldoCaja | number:'1.2-2' }}</strong>.
+        <br />
+        <span class="text-white-50">{{ ultimoPago.notificacionVendedor }}</span>
+      </p>
+    </div>
+  }
+</section>
