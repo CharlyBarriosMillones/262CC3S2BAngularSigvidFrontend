@@ -1,27 +1,25 @@
 <div class="principal-container">
 
-  <!-- Sidebar -->
+  <!-- Sidebar con Menú Dinámico según el Perfil (Ítem 1.f) -->
   <aside class="sidebar">
-
-    <!-- Marca -->
     <a class="brand" routerLink="/">
       <span class="brand-name">VITIVINÍCOLAS</span>
       <span class="brand-country">PERÚ</span>
-
-      <span class="brand-decoration">
-        ━━━━━ ✦ ━━━━━
-      </span>
+      <span class="brand-decoration">━━━━━ ✦ ━━━━━</span>
     </a>
 
-    <!-- Menú -->
-    <div class="menu-title">MENÚ</div>
+    <div class="menu-title">MENÚ DEL PERFIL</div>
 
     <ul class="nav flex-column sidebar-menu">
-      @for (modulo of modulos; track modulo.nombre) {
+      @for (modulo of modulos; track modulo.idMod || modulo.nombre) {
         <li class="nav-item">
-          <a class="nav-link" href="javascript:void(0)" (click)="abrirModulo(modulo)">
+          <a
+            class="nav-link"
+            href="javascript:void(0)"
+            [class.active]="moduloActivoUrl === modulo.url"
+            (click)="abrirModulo(modulo)">
             <span class="menu-icon">
-              <i class="bi {{ modulo.icono }}"></i>
+              <i class="bi {{ modulo.icono || 'bi-grid-fill' }}"></i>
             </span>
             <span>{{ modulo.nombre }}</span>
           </a>
@@ -29,24 +27,23 @@
       }
     </ul>
 
-    <!-- Decoración inferior -->
     <div class="sidebar-footer">
       <span>TRADICIÓN</span>
       <span>EXCELENCIA</span>
       <span>PASIÓN POR EL VINO</span>
     </div>
-
   </aside>
-
 
   <!-- Contenido principal -->
   <div class="main-content">
 
-    <!-- Barra superior -->
+    <!-- Topbar -->
     <nav class="topbar">
-
-      <div class="user-info" style="cursor: pointer;" (click)="mostrarPanelPerfil = !mostrarPanelPerfil" title="Haz clic para abrir tu perfil">
-
+      <div
+        class="user-info"
+        style="cursor: pointer;"
+        (click)="mostrarPanelPerfil = !mostrarPanelPerfil"
+        title="Haz clic para abrir tu perfil">
         <div class="user-avatar overflow-hidden">
           @if (fotoPerfilUrl) {
             <img [src]="fotoPerfilUrl" alt="Avatar de usuario" class="w-100 h-100 object-fit-cover" />
@@ -60,73 +57,44 @@
           <span>{{ usuario?.rol }}</span>
           <span>{{ usuario?.email }}</span>
         </div>
-
       </div>
 
-      <button
-        type="button"
-        class="btn-logout"
-        (click)="logout()">
-
+      <button type="button" class="btn-logout" (click)="logout()">
         <i class="bi bi-box-arrow-right"></i>
         <span>CERRAR SESIÓN</span>
-
       </button>
-
     </nav>
-
 
     <!-- Área desplazable -->
     <main class="content-area">
 
       <!-- Bienvenida -->
       <section class="welcome-banner">
-
         <div class="welcome-content">
-
           <span class="eyebrow">BIENVENIDO · {{ usuario?.rol }}</span>
-
           <h1>Hola, {{ usuario?.nombre }} — {{ tituloPanel }}</h1>
-
-          <p>
-            {{ descripcionPanel }}
-          </p>
-
+          <p>{{ descripcionPanel }}</p>
           <div class="welcome-line"></div>
-
         </div>
-
         <div class="banner-overlay"></div>
-
       </section>
 
-
-      <!-- Funciones -->
+      <!-- Tarjetas de acceso rápido cargadas dinámicamente desde los módulos del rol -->
       <section class="functions-section">
-
         <div class="section-heading">
-          <span class="eyebrow">TUS FUNCIONES</span>
-
-          <h2>Acceso rápido a los módulos</h2>
-
-          <p>
-            Selecciona el módulo al que deseas ingresar.
-          </p>
+          <span class="eyebrow">MÓDULOS HABILITADOS PARA TU PERFIL</span>
+          <h2>Acceso rápido a tus funciones</h2>
+          <p>Opciones cargadas dinámicamente desde la base de datos según tu rol asignado.</p>
         </div>
 
-
-        <!-- tarjetas dinamicas -->
         <div class="function-grid">
-          @for (modulo of modulos; track modulo.nombre) {
+          @for (modulo of modulos; track modulo.idMod || modulo.nombre) {
             <a class="function-card" href="javascript:void(0)" (click)="abrirModulo(modulo)">
               <div class="function-icon">
-                <i class="bi {{ modulo.icono }}"></i>
+                <i class="bi {{ modulo.icono || 'bi-grid-fill' }}"></i>
               </div>
-
               <h3>{{ modulo.nombre }}</h3>
-
               <p>{{ modulo.descripcion }}</p>
-
               <span class="function-link">
                 <span>INGRESAR</span>
                 <i class="bi bi-arrow-right"></i>
@@ -134,10 +102,9 @@
             </a>
           }
         </div>
-
       </section>
 
-      <!-- gestion de perfil de usuario (editar nombre, foto, preferencias y notificaciones) -->
+      <!-- HU02: Gestión de Perfil de Usuario -->
       @if (mostrarPanelPerfil) {
         <section class="admin-users-panel mt-5 p-4 rounded-3">
           <div class="d-flex justify-content-between align-items-center mb-4">
@@ -151,7 +118,6 @@
           </div>
 
           <form [formGroup]="formPerfil" (ngSubmit)="guardarCambiosPerfil()" class="row g-4">
-            <!-- carga de foto de perfil (opcional) -->
             <div class="col-md-4 text-center d-flex flex-column align-items-center justify-content-center border-end border-secondary">
               <div class="user-avatar mb-3 overflow-hidden" style="width: 105px; height: 105px; font-size: 44px;">
                 @if (fotoPerfilUrl) {
@@ -174,7 +140,6 @@
               }
             </div>
 
-            <!-- editar nombre, preferencias y configuracion de notificaciones por email -->
             <div class="col-md-8">
               <div class="row g-3">
                 <div class="col-md-6">
@@ -207,7 +172,6 @@
                   <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="preferenciaMaridaje" />
                 </div>
 
-                <!-- configuracion de notificaciones por email -->
                 <div class="col-12 mt-3">
                   <label class="form-label small text-warning d-block">CONFIGURACIÓN DE NOTIFICACIONES POR EMAIL ({{ usuario?.email }})</label>
                   <div class="p-3 rounded border border-secondary bg-dark bg-opacity-50 d-flex flex-column gap-2">
@@ -233,23 +197,19 @@
                 </div>
 
                 <div class="col-12 mt-3">
-                  <button type="submit" class="btn-logout px-4 py-2" [disabled]="formPerfil.invalid">
+                  <button type="submit" class="btn-logout px-4 py-2" [disabled]="formPerfil.invalid || guardandoPerfil">
                     <i class="bi bi-check2-circle"></i>
-                    <span>GUARDAR PERFIL Y PREFERENCIAS</span>
+                    <span>{{ guardandoPerfil ? 'GUARDANDO...' : 'GUARDAR PERFIL Y PREFERENCIAS' }}</span>
                   </button>
                 </div>
               </div>
-
-              @if (mensajePerfilExito) {
-                <div class="alert alert-success mt-3 py-2 mb-0">{{ mensajePerfilExito }}</div>
-              }
             </div>
           </form>
         </section>
       }
 
-      <!-- visualizacion de historial de pedidos (clientes) -->
-      @if (mostrarPanelPedidosCliente && esCliente()) {
+      <!-- HU02: Visualización de Historial de Pedidos del Cliente (Conectado a BD Neon) -->
+      @if (mostrarPanelPedidosCliente) {
         <section class="admin-users-panel mt-5 p-4 rounded-3">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -261,38 +221,44 @@
             </button>
           </div>
 
-          <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle small mb-0">
-              <thead>
-                <tr>
-                  <th>CÓDIGO</th>
-                  <th>FECHA DE SOLICITUD</th>
-                  <th>DETALLE DE PRODUCTOS</th>
-                  <th>SUCURSAL</th>
-                  <th>ESTADO</th>
-                  <th>IMPORTE TOTAL</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (pedido of historialPedidosCliente; track pedido.codigoPedido) {
+          @if (historialPedidosCliente.length === 0) {
+            <div class="alert alert-secondary bg-dark text-light border-secondary mb-0">
+              Aún no tienes pedidos registrados con tu cuenta ({{ usuario?.email }}).
+            </div>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-dark table-hover align-middle small mb-0">
+                <thead>
                   <tr>
-                    <td class="fw-bold text-warning">{{ pedido.codigoPedido }}</td>
-                    <td>{{ pedido.fechaSolicitud }}</td>
-                    <td>{{ pedido.detalle }}</td>
-                    <td>{{ pedido.sucursal }}</td>
-                    <td>
-                      <span class="badge bg-warning text-dark">{{ pedido.estado }}</span>
-                    </td>
-                    <td class="fw-bold">S/ {{ pedido.importeTotal.toFixed(2) }}</td>
+                    <th>CÓDIGO</th>
+                    <th>FECHA SOLICITUD</th>
+                    <th>FACTURA SUNAT</th>
+                    <th>SUCURSAL</th>
+                    <th>ESTADO</th>
+                    <th>IMPORTE TOTAL</th>
                   </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  @for (pedido of historialPedidosCliente; track pedido.idPedido) {
+                    <tr>
+                      <td class="fw-bold text-warning">{{ pedido.codigoPedido }}</td>
+                      <td>{{ pedido.fechaSolicitud | date:'dd/MM/yyyy HH:mm' }}</td>
+                      <td>{{ pedido.codigoFactura || 'Sin factura' }}</td>
+                      <td>{{ pedido.nombreSucursal }}</td>
+                      <td>
+                        <span class="badge bg-warning text-dark">{{ pedido.estado }}</span>
+                      </td>
+                      <td class="fw-bold">S/ {{ pedido.importeTotal | number:'1.2-2' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         </section>
       }
 
-      <!-- panel de gestion de usuarios (se muestra al hacer clic en 'Usuarios y Personal') -->
+      <!-- Panel de Gestión de Usuarios (Administrador) -->
       @if (mostrarPanelUsuarios && esAdmin()) {
         <section class="admin-users-panel mt-5 p-4 rounded-3">
           <div class="d-flex justify-content-between align-items-center mb-4">
@@ -308,27 +274,27 @@
           <form [formGroup]="formNuevoUsuario" (ngSubmit)="crearUsuarioDesdeAdmin()" class="row g-3">
             <div class="col-md-4">
               <label class="form-label small text-warning">NOMBRES *</label>
-              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombres">
+              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombres" />
             </div>
             <div class="col-md-4">
               <label class="form-label small text-warning">APELLIDOS *</label>
-              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido" placeholder="Apellidos">
+              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido" placeholder="Apellidos" />
             </div>
             <div class="col-md-4">
               <label class="form-label small text-warning">DNI (8 DÍGITOS) *</label>
-              <input type="text" maxlength="8" class="form-control bg-dark text-white border-secondary" formControlName="dni" placeholder="12345678">
+              <input type="text" maxlength="8" class="form-control bg-dark text-white border-secondary" formControlName="dni" placeholder="12345678" />
             </div>
             <div class="col-md-4">
               <label class="form-label small text-warning">CORREO ELECTRÓNICO *</label>
-              <input type="email" class="form-control bg-dark text-white border-secondary" formControlName="email" placeholder="usuario@vitivinicolas.pe">
+              <input type="email" class="form-control bg-dark text-white border-secondary" formControlName="email" placeholder="usuario@vitivinicolas.pe" />
             </div>
             <div class="col-md-3">
               <label class="form-label small text-warning">TELÉFONO</label>
-              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="telefono" placeholder="999888777">
+              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="telefono" placeholder="999888777" />
             </div>
             <div class="col-md-3">
               <label class="form-label small text-warning">CONTRASEÑA INICIAL *</label>
-              <input type="password" class="form-control bg-dark text-white border-secondary" formControlName="password" placeholder="Mín. 6 caracteres">
+              <input type="password" class="form-control bg-dark text-white border-secondary" formControlName="password" placeholder="Mín. 6 caracteres" />
             </div>
             <div class="col-md-2">
               <label class="form-label small text-warning">ROL ASIGNADO *</label>
@@ -348,14 +314,6 @@
             </div>
           </form>
 
-          @if (mensajeExito) {
-            <div class="alert alert-success mt-3 py-2">{{ mensajeExito }}</div>
-          }
-          @if (mensajeError) {
-            <div class="alert alert-danger mt-3 py-2">{{ mensajeError }}</div>
-          }
-
-          <!-- tabla rapida de usuarios registrados en Neon -->
           <div class="table-responsive mt-4">
             <table class="table table-dark table-hover align-middle small mb-0">
               <thead>
@@ -383,26 +341,16 @@
         </section>
       }
 
-
-      <!-- contenido de las rutas hijas -->
+      <!-- Contenido de las rutas hijas (Sprint 2: Catálogo, Registrar Pedido, Registrar Pago, Derivar a Almacén) -->
       <section class="router-content">
         <router-outlet></router-outlet>
       </section>
 
-
-      <!-- pie -->
       <footer class="dashboard-footer">
-
         <span>© VITIVINÍCOLAS PERÚ 2026</span>
-
-        <span>
-          TRADICIÓN · EXCELENCIA · PASIÓN POR EL VINO
-        </span>
-
+        <span>TRADICIÓN · EXCELENCIA · PASIÓN POR EL VINO</span>
       </footer>
 
     </main>
-
   </div>
-
 </div>

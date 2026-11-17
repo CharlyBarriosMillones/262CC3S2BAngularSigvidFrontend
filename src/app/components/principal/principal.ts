@@ -1,8 +1,12 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { SessionService } from '../../services/session.service';
+import { UsuarioService } from '../../services/usuario.service';
+import { ToastService } from '../../services/toast.service';
 import { UserSesion } from '../../model/user-sesion';
 import { Modulo } from '../../model/modulo';
 import { Rol } from '../../model/rol';
@@ -11,33 +15,35 @@ import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-principal',
   standalone: true,
-  imports: [RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './principal.html',
   styleUrl: './principal.scss',
 })
 export class Principal implements OnInit {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly sessionService = inject(SessionService);
+  private readonly usuarioService = inject(UsuarioService);
+  private readonly toastService = inject(ToastService);
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
 
   usuario: UserSesion | null = null;
   modulos: Modulo[] = [];
-  tituloPanel: string = 'Panel del Sistema';
-  descripcionPanel: string = 'Gestiona tus actividades y accede a los módulos disponibles en el sistema.';
+  moduloActivoUrl: string = '';
+  tituloPanel: string = 'Panel de Gestión Vitivinícola';
+  descripcionPanel: string = 'Selecciona una opción del menú dinámico habilitada para tu perfil de usuario.';
 
-  // gestion de usuarios (para el Admin)
+  // Paneles de Sprint 1 (HU01, HU02 y Administración)
   mostrarPanelUsuarios = false;
+  mostrarPanelPerfil = false;
+  mostrarPanelPedidosCliente = false;
+
   rolesDisponibles: Rol[] = [];
   listaUsuarios: any[] = [];
-  mensajeExito = '';
-  mensajeError = '';
-  guardandoUsuario = false;
-
-  // gestion de perfil de usuario
-  mostrarPanelPerfil = false;
+  historialPedidosCliente: any[] = [];
   fotoPerfilUrl: string | null = null;
-  mensajePerfilExito = '';
+  guardandoUsuario = false;
   guardandoPerfil = false;
 
   formPerfil = new FormGroup({
@@ -48,37 +54,8 @@ export class Principal implements OnInit {
     preferenciaMaridaje: new FormControl('Carnes rojas y quesos maduros'),
     notifEstadoPedidos: new FormControl(true),
     notifPromocionesEmail: new FormControl(true),
-    notifNuevasCosechas: new FormControl(false)
+    notifNuevasCosechas: new FormControl(false),
   });
-
-  // visualizacion del historial de pedidos (para clientes)
-  mostrarPanelPedidosCliente = false;
-  historialPedidosCliente = [
-    {
-      codigoPedido: 'PED-2026-0014',
-      fechaSolicitud: '10/10/2026 18:45',
-      detalle: '2x Gran Reserva Malbec, 1x Pisco Mosto Verde Italia',
-      sucursal: 'Sede Central - Ica',
-      estado: 'Entregado',
-      importeTotal: 265.00
-    },
-    {
-      codigoPedido: 'PED-2026-0021',
-      fechaSolicitud: '14/10/2026 11:20',
-      detalle: '1x Valle Sagrado Tannat, 1x Lote Corcho Natural Flor (50 uds)',
-      sucursal: 'Sede Central - Ica',
-      estado: 'En Camino',
-      importeTotal: 170.50
-    },
-    {
-      codigoPedido: 'PED-2026-0028',
-      fechaSolicitud: '15/10/2026 19:30',
-      detalle: '2x Pisco Acholado Premium',
-      sucursal: 'Sede Lima - Miraflores',
-      estado: 'Confirmado',
-      importeTotal: 150.00
-    }
-  ];
 
   formNuevoUsuario = new FormGroup({
     nombre: new FormControl('', [Validators.required]),
@@ -87,19 +64,37 @@ export class Principal implements OnInit {
     email: new FormControl('', [Validators.required, Validators.email]),
     telefono: new FormControl(''),
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
-    idRol: new FormControl<number | null>(null, [Validators.required])
+    idRol: new FormControl<number | null>(null, [Validators.required]),
   });
 
   ngOnInit(): void {
-    // si no ha iniciado sesion, lo regresamos al login
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
       return;
     }
 
-    this.usuario = this.authService.getUsuarioActual();
+    // Ítem 1.f: Leemos usuario y módulos dinámicos directamente del token JWT mediante SessionService
+    this.usuario = this.sessionService.getInfoSession();
+    if (!this.usuario) {
+      this.authService.logout();
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.tituloPanel = `Panel de ${this.usuario.rol}`;
+    this.modulos = this.usuario.modulos || [];
+
+    // Si el token no trajo módulos (por ejemplo, antes de correr el SQL), consulta al endpoint por idRol
+    if (this.modulos.length === 0 && this.usuario.role?.idRol) {
+      this.usuarioService.listarModulosPorRol(this.usuario.role.idRol).subscribe({
+        next: (mods) => {
+          this.modulos = mods;
+          this.cdr.detectChanges();
+        },
+      });
+    }
+
     this.cargarDatosPerfilDesdeBD();
-    this.cargarPanelPorRol(this.usuario?.rol || 'Cliente');
   }
 
   esAdmin(): boolean {
@@ -110,46 +105,63 @@ export class Principal implements OnInit {
     return (this.usuario?.rol?.toLowerCase().trim() || 'cliente') === 'cliente';
   }
 
-  abrirModulo(modulo: Modulo): void {
-    this.mensajePerfilExito = '';
+  private cerrarPanelesLocales(): void {
+    this.mostrarPanelUsuarios = false;
+    this.mostrarPanelPerfil = false;
+    this.mostrarPanelPedidosCliente = false;
+  }
 
-    if (this.esAdmin() && modulo.nombre === 'Usuarios y Personal') {
-      this.mostrarPanelUsuarios = !this.mostrarPanelUsuarios;
-      this.mostrarPanelPerfil = false;
-      this.mostrarPanelPedidosCliente = false;
+  abrirModulo(modulo: Modulo): void {
+    const url = modulo.url || '';
+    this.moduloActivoUrl = url;
+
+    if (url.endsWith('/perfil') || modulo.nombre === 'Mi Perfil y Preferencias') {
+      const estado = !this.mostrarPanelPerfil;
+      this.cerrarPanelesLocales();
+      this.mostrarPanelPerfil = estado;
+      this.router.navigate(['/principal']);
+      return;
+    }
+
+    if (url.endsWith('/usuarios') || modulo.nombre === 'Usuarios y Personal') {
+      const estado = !this.mostrarPanelUsuarios;
+      this.cerrarPanelesLocales();
+      this.mostrarPanelUsuarios = estado;
       if (this.mostrarPanelUsuarios) {
         this.cargarRolesYUsuarios();
       }
+      this.router.navigate(['/principal']);
       return;
     }
 
-    if (modulo.nombre === 'Mi Perfil y Preferencias') {
-      this.mostrarPanelPerfil = !this.mostrarPanelPerfil;
-      this.mostrarPanelUsuarios = false;
-      this.mostrarPanelPedidosCliente = false;
+    if (url.endsWith('/mis-pedidos') || modulo.nombre === 'Mis Pedidos y Cuenta') {
+      const estado = !this.mostrarPanelPedidosCliente;
+      this.cerrarPanelesLocales();
+      this.mostrarPanelPedidosCliente = estado;
+      if (this.mostrarPanelPedidosCliente) {
+        this.cargarHistorialPedidosCliente();
+      }
+      this.router.navigate(['/principal']);
       return;
     }
 
-    if (modulo.nombre === 'Mis Pedidos y Cuenta') {
-      this.mostrarPanelPedidosCliente = !this.mostrarPanelPedidosCliente;
-      this.mostrarPanelPerfil = false;
-      this.mostrarPanelUsuarios = false;
-      return;
-    }
-
-    if (modulo.ruta && modulo.ruta !== '/principal') {
-      this.router.navigate([modulo.ruta]);
+    // Si es una ruta hija de Sprint 2 (Catálogo, Registrar Pedido, Registrar Pago, Derivar a Almacén)
+    this.cerrarPanelesLocales();
+    if (url) {
+      this.router.navigate([url]);
     }
   }
 
-  // cnsultamos los datos reales del usuario
   private cargarDatosPerfilDesdeBD(): void {
     if (!this.usuario?.email) return;
 
-    this.authService.obtenerPerfil(this.usuario.email).subscribe({
+    this.usuarioService.obtenerPerfil(this.usuario.email).subscribe({
       next: (perfil) => {
-        this.usuario!.nombre = perfil.nombre;
-        this.usuario!.apellido = perfil.apellido;
+        if (this.usuario) {
+          this.usuario.nombre = perfil.nombre;
+          this.usuario.apellido = perfil.apellido;
+          this.usuario.names = `${perfil.nombre} ${perfil.apellido}`;
+        }
         this.fotoPerfilUrl = perfil.fotoPerfil || null;
 
         this.formPerfil.patchValue({
@@ -160,14 +172,30 @@ export class Principal implements OnInit {
           preferenciaMaridaje: perfil.preferenciaMaridaje || 'Carnes rojas y quesos maduros',
           notifEstadoPedidos: perfil.notifEstadoPedidos ?? true,
           notifPromocionesEmail: perfil.notifPromocionesEmail ?? true,
-          notifNuevasCosechas: perfil.notifNuevasCosechas ?? false
+          notifNuevasCosechas: perfil.notifNuevasCosechas ?? false,
         });
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
-  // comprimimos la foto a 250x250px (~15KB) y la convierte a Base64 para guardarla en la BD
+  cargarHistorialPedidosCliente(): void {
+    if (!this.usuario?.email) return;
+    this.http
+      .get<any[]>(`${environment.apiUrl}/pedidos/cliente`, {
+        params: { email: this.usuario.email },
+      })
+      .subscribe({
+        next: (pedidos) => {
+          this.historialPedidosCliente = pedidos;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.toastService.show('No se pudo obtener el historial de pedidos.', 'warning');
+        },
+      });
+  }
+
   onSeleccionarFotoPerfil(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -193,7 +221,6 @@ export class Principal implements OnInit {
     reader.readAsDataURL(archivo);
   }
 
-  // guarda nombre, foto y preferencias 
   guardarCambiosPerfil(): void {
     if (this.formPerfil.invalid || !this.usuario) {
       this.formPerfil.markAllAsTouched();
@@ -201,7 +228,6 @@ export class Principal implements OnInit {
     }
 
     this.guardandoPerfil = true;
-    this.mensajePerfilExito = '';
     const val = this.formPerfil.value;
 
     const payload = {
@@ -214,38 +240,41 @@ export class Principal implements OnInit {
       preferenciaMaridaje: val.preferenciaMaridaje,
       notifEstadoPedidos: val.notifEstadoPedidos,
       notifPromocionesEmail: val.notifPromocionesEmail,
-      notifNuevasCosechas: val.notifNuevasCosechas
+      notifNuevasCosechas: val.notifNuevasCosechas,
     };
 
-    this.authService.actualizarPerfil(payload).subscribe({
+    this.usuarioService.actualizarPerfil(payload).subscribe({
       next: (actualizado) => {
         this.guardandoPerfil = false;
-        this.usuario!.nombre = actualizado.nombre;
-        this.usuario!.apellido = actualizado.apellido;
+        if (this.usuario) {
+          this.usuario.nombre = actualizado.nombre;
+          this.usuario.apellido = actualizado.apellido;
+          this.usuario.names = `${actualizado.nombre} ${actualizado.apellido}`;
+        }
         this.fotoPerfilUrl = actualizado.fotoPerfil || null;
-        this.mensajePerfilExito = 'Cambios guardados exitosamente en la base de datos de Neon.';
+        this.toastService.show('Perfil y preferencias actualizados en Neon.', 'success');
         this.cdr.detectChanges();
       },
       error: (err) => {
         this.guardandoPerfil = false;
-        this.mensajeError = err.error?.message || 'Error al guardar el perfil en la base de datos.';
+        this.toastService.show(err.error?.message || 'Error al actualizar el perfil.', 'danger');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   cargarRolesYUsuarios(): void {
-    this.http.get<Rol[]>(`${environment.apiUrl}/roles`).subscribe({
+    this.usuarioService.listarRoles().subscribe({
       next: (roles) => {
         this.rolesDisponibles = roles;
         this.cdr.detectChanges();
-      }
+      },
     });
-    this.http.get<any[]>(`${environment.apiUrl}/usuarios`).subscribe({
+    this.usuarioService.listarUsuarios().subscribe({
       next: (usuarios) => {
         this.listaUsuarios = usuarios;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -255,10 +284,7 @@ export class Principal implements OnInit {
       return;
     }
 
-    this.mensajeExito = '';
-    this.mensajeError = '';
     this.guardandoUsuario = true;
-
     const val = this.formNuevoUsuario.value;
     const payload = {
       nombre: val.nombre,
@@ -267,187 +293,28 @@ export class Principal implements OnInit {
       email: val.email,
       telefono: val.telefono || null,
       password: val.password,
-      idRol: Number(val.idRol)
+      idRol: Number(val.idRol),
     };
 
-    this.http.post<any>(`${environment.apiUrl}/usuarios`, payload).subscribe({
+    this.usuarioService.crearUsuario(payload).subscribe({
       next: (nuevo) => {
         this.guardandoUsuario = false;
-        this.mensajeExito = `Usuario ${nuevo.nombre} (${nuevo.nombreRol}) registrado exitosamente en Neon.`;
+        this.toastService.show(`Usuario ${nuevo.nombre} (${nuevo.nombreRol}) registrado en Neon.`, 'success');
         this.formNuevoUsuario.reset();
         this.cargarRolesYUsuarios();
         this.cdr.detectChanges();
       },
       error: (err) => {
         this.guardandoUsuario = false;
-        this.mensajeError = err.error?.message || 'Error al registrar el usuario. Verifica DNI o Correo.';
+        this.toastService.show(err.error?.message || 'Error al registrar el usuario.', 'danger');
         this.cdr.detectChanges();
-      }
+      },
     });
-  }
-
-  private cargarPanelPorRol(rol: string): void {
-    switch (rol.toLowerCase().trim()) {
-      case 'administrador':
-        this.tituloPanel = 'Panel de Administración';
-        this.descripcionPanel = 'Supervisa las operaciones globales, usuarios, sucursales y catálogo de Vitivinícolas Perú.';
-        this.modulos = [
-          {
-            nombre: 'Usuarios y Personal',
-            descripcion: 'Crea cuentas para vendedores, cajeros, almaceneros o clientes.',
-            icono: 'bi-people-fill',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Mi Perfil y Preferencias',
-            descripcion: 'Edita tu nombre, foto de perfil y configuración de notificaciones por email.',
-            icono: 'bi-person-lines-fill',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Catálogo Vitivinícola',
-            descripcion: 'Gestiona vinos, piscos, lotes de corchos, precios y cosechas.',
-            icono: 'bi-collection-fill',
-            ruta: '/vinos'
-          },
-          {
-            nombre: 'Sucursales y Sedes',
-            descripcion: 'Controla las sedes operativas y puntos de distribución.',
-            icono: 'bi-building-fill-gear',
-            ruta: '/principal'
-          }
-        ];
-        break;
-
-      case 'vendedor':
-        this.tituloPanel = 'Panel de Ventas';
-        this.descripcionPanel = 'Gestiona pedidos comerciales, cotizaciones de lotes y atención a clientes.';
-        this.modulos = [
-          {
-            nombre: 'Registrar Pedido',
-            descripcion: 'Genera nuevas órdenes de venta de vinos, piscos y corchos.',
-            icono: 'bi-cart-plus-fill',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Cartera de Clientes',
-            descripcion: 'Consulta y registra clientes corporativos y particulares.',
-            icono: 'bi-person-vcard-fill',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Mi Perfil y Preferencias',
-            descripcion: 'Edita tu nombre, foto de perfil y notificaciones por correo.',
-            icono: 'bi-person-lines-fill',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Consultar Catálogo',
-            descripcion: 'Revisa disponibilidad de productos, precios y notas de cata.',
-            icono: 'bi-journal-richtext',
-            ruta: '/vinos'
-          }
-        ];
-        break;
-
-      case 'cajero':
-        this.tituloPanel = 'Panel de Caja y Facturación';
-        this.descripcionPanel = 'Procesa pagos, emite boletas o facturas y realiza el cuadre de caja.';
-        this.modulos = [
-          {
-            nombre: 'Cobros y Facturación',
-            descripcion: 'Registra pagos de pedidos pendientes y emite comprobantes.',
-            icono: 'bi-cash-coin',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Historial de Comprobantes',
-            descripcion: 'Consulta boletas y facturas emitidas en tu turno.',
-            icono: 'bi-receipt-cutoff',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Arqueo de Caja',
-            descripcion: 'Realiza la apertura y cierre de tu caja asignada.',
-            icono: 'bi-safe2-fill',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Mi Perfil y Preferencias',
-            descripcion: 'Edita tu nombre, foto de perfil y notificaciones por correo.',
-            icono: 'bi-person-lines-fill',
-            ruta: '/principal'
-          }
-        ];
-        break;
-
-      case 'almacenero':
-        this.tituloPanel = 'Panel de Almacén y Logística';
-        this.descripcionPanel = 'Controla el stock de botellas, insumos de corcho y despachos entre sucursales.';
-        this.modulos = [
-          {
-            nombre: 'Control de Inventario',
-            descripcion: 'Verifica entradas, salidas y stock actual en almacén.',
-            icono: 'bi-boxes',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Despacho de Pedidos',
-            descripcion: 'Prepara y aprueba la salida de lotes vendidos.',
-            icono: 'bi-truck',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Lotes y Proveedores',
-            descripcion: 'Registra el ingreso de nuevas cosechas y corchos.',
-            icono: 'bi-clipboard2-check-fill',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Mi Perfil y Preferencias',
-            descripcion: 'Edita tu nombre, foto de perfil y alertas de almacén por email.',
-            icono: 'bi-person-lines-fill',
-            ruta: '/principal'
-          }
-        ];
-        break;
-
-      case 'cliente':
-      default:
-        this.tituloPanel = 'Portal Exclusivo de Cliente';
-        this.descripcionPanel = 'Disfruta de nuestra selección Gran Reserva, realiza pedidos y revisa tus compras.';
-        this.modulos = [
-          {
-            nombre: 'Mi Perfil y Preferencias',
-            descripcion: 'Edita tu nombre, foto de perfil, preferencias y notificaciones por correo.',
-            icono: 'bi-person-lines-fill',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Mis Pedidos y Cuenta',
-            descripcion: 'Visualiza tu historial de pedidos realizados, estados de entrega e importes.',
-            icono: 'bi-bag-heart-fill',
-            ruta: '/principal'
-          },
-          {
-            nombre: 'Colección de Vinos',
-            descripcion: 'Descubre nuestros vinos Gran Reserva y realiza tu selección.',
-            icono: 'bi-cup-straw',
-            ruta: '/vinos'
-          },
-          {
-            nombre: 'Colección de Piscos',
-            descripcion: 'Explora nuestros destilados puros, mosto verde y acholados.',
-            icono: 'bi-droplet-half',
-            ruta: '/piscos'
-          }
-        ];
-        break;
-    }
   }
 
   logout(): void {
     this.authService.logout();
+    this.toastService.show('Sesión cerrada correctamente.', 'info');
     this.router.navigate(['/login']);
   }
 }
