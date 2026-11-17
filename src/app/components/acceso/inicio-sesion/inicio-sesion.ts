@@ -1,27 +1,26 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-inicio-sesion',
+  standalone: true,
   imports: [ReactiveFormsModule, RouterModule],
   templateUrl: './inicio-sesion.html',
   styleUrl: './inicio-sesion.scss',
 })
-
 export class InicioSesion implements OnInit {
   private readonly router = inject(Router);
-  private readonly location = inject(Location);
   private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   errorMessage: string = '';
   successMessage: string = '';
   cargando: boolean = false;
-
-  // controla si se muestra el formulario de recuperacion de contraseña
   modoRecuperacion: boolean = false;
 
   form = new FormGroup({
@@ -30,7 +29,6 @@ export class InicioSesion implements OnInit {
     recordarSesion: new FormControl(true),
   });
 
-  // formulario para recuperar contraseña validando email y DNI
   formRecuperacion = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     dni: new FormControl('', [Validators.required, Validators.pattern(/^\d{8}$/)]),
@@ -38,13 +36,12 @@ export class InicioSesion implements OnInit {
   });
 
   ngOnInit(): void {
-    // inicio de sesi, si ya esta activa redirige a /principal
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/principal']);
     }
   }
 
-  login() {
+  login(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -59,30 +56,30 @@ export class InicioSesion implements OnInit {
     this.cdr.detectChanges();
 
     this.authService.login({ email, password }).subscribe({
-      next: () => {
+      next: (res) => {
         this.cargando = false;
+        this.toastService.show(`Bienvenido(a), ${res.nombre} (${res.rol})`, 'success');
         this.cdr.detectChanges();
         this.router.navigate(['/principal']);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.cargando = false;
-        // captura el mensaje enviado por GlobalExceptionHandler del backend
-        this.errorMessage = err.error?.message || 'Error al conectar con el servidor. Verifica tus credenciales.';
-        // fuerza a actualizar la vista inmediatamente 
+        const msg = err.error?.message || 'Credenciales incorrectas o usuario no encontrado.';
+        this.errorMessage = msg;
+        this.toastService.show(msg, 'danger');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
-  // alterna entre vista de login y vista de recuperacion de contraseña 
-  toggleRecuperacion() {
+  toggleRecuperacion(): void {
     this.modoRecuperacion = !this.modoRecuperacion;
     this.errorMessage = '';
     this.successMessage = '';
     this.cdr.detectChanges();
   }
 
-  recuperarPassword() {
+  recuperarPassword(): void {
     if (this.formRecuperacion.invalid) {
       this.formRecuperacion.markAllAsTouched();
       return;
@@ -97,23 +94,27 @@ export class InicioSesion implements OnInit {
     this.cdr.detectChanges();
 
     this.authService.recuperarPassword({ email, dni, nuevaPassword }).subscribe({
-      next: () => {
+      next: (res) => {
         this.cargando = false;
-        this.successMessage = `La contraseña para ${email} fue actualizada en la base de datos. Ya puedes iniciar sesión.`;
+        const msg = res.message || `La contraseña para ${email} fue actualizada correctamente.`;
+        this.successMessage = msg;
+        this.toastService.show(msg, 'success');
         this.formRecuperacion.reset();
         this.modoRecuperacion = false;
         this.form.patchValue({ email, password: '' });
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.cargando = false;
-        this.errorMessage = err.error?.message || 'No se pudo restablecer la contraseña. Verifica que el correo y DNI coincidan.';
+        const msg = err.error?.message || 'No se pudo restablecer la contraseña. Verifica correo y DNI.';
+        this.errorMessage = msg;
+        this.toastService.show(msg, 'danger');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
-  onBack() {
+  onBack(): void {
     this.router.navigate(['']);
   }
 }
