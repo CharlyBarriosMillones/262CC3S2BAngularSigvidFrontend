@@ -1,7 +1,9 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
+import { ToastService } from '../../../services/toast.service';
 import { RegisterRequest } from '../../../model/api/request/register-request';
 
 @Component({
@@ -9,18 +11,18 @@ import { RegisterRequest } from '../../../model/api/request/register-request';
   standalone: true,
   imports: [ReactiveFormsModule, RouterModule],
   templateUrl: './registro.html',
-  styleUrl: './registro.scss'
+  styleUrl: './registro.scss',
 })
 export class Registro {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   errorMessage: string = '';
   cargando: boolean = false;
   mostrarDatosEmpresa: boolean = false;
 
-  // variables para la verificacion del email mediante correo electronico
   pasoVerificacionEmail: boolean = false;
   codigoGenerado: string = '';
   codigoIngresado = new FormControl('', [Validators.required, Validators.minLength(6)]);
@@ -34,14 +36,13 @@ export class Registro {
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
     ruc: new FormControl('', [Validators.pattern(/^\d{11}$/)]),
     razonSocial: new FormControl('', [Validators.maxLength(150)]),
-    direccion: new FormControl('')
+    direccion: new FormControl(''),
   });
 
   toggleDatosEmpresa(): void {
     this.mostrarDatosEmpresa = !this.mostrarDatosEmpresa;
   }
 
-  // generar codigo de verificacion de correo electronico antes de guardar
   iniciarVerificacionEmail(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -52,13 +53,14 @@ export class Registro {
     this.codigoGenerado = Math.floor(100000 + Math.random() * 900000).toString();
     this.codigoIngresado.reset('');
     this.pasoVerificacionEmail = true;
+    this.toastService.show(`Código de verificación enviado: ${this.codigoGenerado}`, 'info');
     this.cdr.detectChanges();
   }
 
-  // confirmar el codigo enviado al correo y registrar en Neon
   confirmarCodigoYRegistrar(): void {
     if (this.codigoIngresado.value?.trim() !== this.codigoGenerado) {
       this.errorMessage = 'El código de verificación ingresado es incorrecto.';
+      this.toastService.show(this.errorMessage, 'danger');
       this.cdr.detectChanges();
       return;
     }
@@ -79,7 +81,6 @@ export class Registro {
     this.cargando = true;
     this.cdr.detectChanges();
 
-    // enviamos undefined en campos opcionales vacios para respetar UNIQUE en la BD
     const payload: RegisterRequest = {
       nombre: val.nombre.trim(),
       apellido: val.apellido.trim(),
@@ -91,20 +92,23 @@ export class Registro {
       nombreRol: 'Cliente',
       ruc: val.ruc?.trim() ? val.ruc.trim() : undefined,
       razonSocial: val.razonSocial?.trim() ? val.razonSocial.trim() : undefined,
-      direccion: val.direccion?.trim() ? val.direccion.trim() : undefined
+      direccion: val.direccion?.trim() ? val.direccion.trim() : undefined,
     };
 
     this.authService.register(payload).subscribe({
-      next: () => {
+      next: (res) => {
         this.cargando = false;
+        this.toastService.show(`Cuenta creada exitosamente. ¡Bienvenido(a), ${res.nombre}!`, 'success');
         this.cdr.detectChanges();
         this.router.navigate(['/principal']);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.cargando = false;
-        this.errorMessage = err.error?.message || 'No se pudo completar el registro. Verifica que el DNI o correo no estén duplicados.';
+        const msg = err.error?.message || 'No se pudo completar el registro. Verifica DNI o correo.';
+        this.errorMessage = msg;
+        this.toastService.show(msg, 'danger');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 }
