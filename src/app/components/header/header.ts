@@ -1,46 +1,48 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
-import { Router, NavigationEnd, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
+import { SessionService } from '../../services/session.service';
+import { UserSesion } from '../../model/user-sesion';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [RouterLink],
   templateUrl: './header.html',
-  styleUrl: './header.scss'
+  styleUrl: './header.scss',
 })
 export class Header implements OnInit {
   isHome = true;
   isScrolled = false;
   mostrarAdvertencia = false;
   mostrarHeader = true;
+  usuarioSesion: UserSesion | null = null;
 
-  private router = inject(Router);
-  // pantallas en las que se verá la advertencia
-  private rutasConAdvertencia = ['/', '/vinos', '/piscos', '/corchos'];
-  // rutas donde no aparece el header
-  private rutasInternas = ['/principal', '/login', '/register'];
+  private readonly router = inject(Router);
+  private readonly sessionService = inject(SessionService);
 
-  ngOnInit() {
+  private readonly rutasConAdvertencia = ['/', '/vinos', '/piscos', '/corchos'];
+  private readonly rutasInternas = ['/principal', '/login', '/register'];
+
+  ngOnInit(): void {
     this.actualizarEstadoVista(this.router.url);
 
-    // saber si el usuario cambia de pagina a través del menu
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: NavigationEnd) => {
-      this.actualizarEstadoVista(event.urlAfterRedirects);
-    });
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.actualizarEstadoVista(event.urlAfterRedirects);
+      });
   }
 
-  private actualizarEstadoVista(url: string) {
+  private actualizarEstadoVista(url: string): void {
     this.isHome = url === '/';
     this.mostrarAdvertencia = this.rutasConAdvertencia.includes(url);
-    this.mostrarHeader = !this.rutasInternas.some(ruta => url.startsWith(ruta));
+    this.mostrarHeader = !this.rutasInternas.some((ruta) => url.startsWith(ruta));
+    this.usuarioSesion = this.sessionService.getInfoSession();
   }
 
-  // detectar el scroll vertical de la ventana
   @HostListener('window:scroll', [])
-  onWindowScroll() {
-    this.isScrolled = window.scrollY > 50; // se activa tras bajar 50px
+  onWindowScroll(): void {
+    this.isScrolled = window.scrollY > 50;
   }
 }
