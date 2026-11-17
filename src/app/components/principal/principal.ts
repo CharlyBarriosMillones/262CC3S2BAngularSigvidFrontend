@@ -34,17 +34,19 @@ export class Principal implements OnInit {
   tituloPanel: string = 'Panel de Gestión Vitivinícola';
   descripcionPanel: string = 'Selecciona una opción del menú dinámico habilitada para tu perfil de usuario.';
 
-  // Paneles de Sprint 1 (HU01, HU02 y Administración)
   mostrarPanelUsuarios = false;
   mostrarPanelPerfil = false;
   mostrarPanelPedidosCliente = false;
+  mostrarPanelSucursales = false;
 
   rolesDisponibles: Rol[] = [];
   listaUsuarios: any[] = [];
+  listaSucursales: any[] = [];
   historialPedidosCliente: any[] = [];
   fotoPerfilUrl: string | null = null;
   guardandoUsuario = false;
   guardandoPerfil = false;
+  guardandoSucursal = false;
 
   formPerfil = new FormGroup({
     nombre: new FormControl('', [Validators.required]),
@@ -67,13 +69,18 @@ export class Principal implements OnInit {
     idRol: new FormControl<number | null>(null, [Validators.required]),
   });
 
+  formNuevaSucursal = new FormGroup({
+    nombre: new FormControl('', [Validators.required]),
+    direccion: new FormControl('', [Validators.required]),
+    telefono: new FormControl(''),
+  });
+
   ngOnInit(): void {
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
       return;
     }
 
-    // Ítem 1.f: Leemos usuario y módulos dinámicos directamente del token JWT mediante SessionService
     this.usuario = this.sessionService.getInfoSession();
     if (!this.usuario) {
       this.authService.logout();
@@ -84,7 +91,6 @@ export class Principal implements OnInit {
     this.tituloPanel = `Panel de ${this.usuario.rol}`;
     this.modulos = this.usuario.modulos || [];
 
-    // Si el token no trajo módulos (por ejemplo, antes de correr el SQL), consulta al endpoint por idRol
     if (this.modulos.length === 0 && this.usuario.role?.idRol) {
       this.usuarioService.listarModulosPorRol(this.usuario.role.idRol).subscribe({
         next: (mods) => {
@@ -109,6 +115,7 @@ export class Principal implements OnInit {
     this.mostrarPanelUsuarios = false;
     this.mostrarPanelPerfil = false;
     this.mostrarPanelPedidosCliente = false;
+    this.mostrarPanelSucursales = false;
   }
 
   abrirModulo(modulo: Modulo): void {
@@ -134,6 +141,17 @@ export class Principal implements OnInit {
       return;
     }
 
+    if (url.endsWith('/sucursales') || modulo.nombre === 'Sucursales y Roles') {
+      const estado = !this.mostrarPanelSucursales;
+      this.cerrarPanelesLocales();
+      this.mostrarPanelSucursales = estado;
+      if (this.mostrarPanelSucursales) {
+        this.cargarSucursalesYRoles();
+      }
+      this.router.navigate(['/principal']);
+      return;
+    }
+
     if (url.endsWith('/mis-pedidos') || modulo.nombre === 'Mis Pedidos y Cuenta') {
       const estado = !this.mostrarPanelPedidosCliente;
       this.cerrarPanelesLocales();
@@ -145,7 +163,6 @@ export class Principal implements OnInit {
       return;
     }
 
-    // Si es una ruta hija de Sprint 2 (Catálogo, Registrar Pedido, Registrar Pago, Derivar a Almacén)
     this.cerrarPanelesLocales();
     if (url) {
       this.router.navigate([url]);
@@ -194,6 +211,51 @@ export class Principal implements OnInit {
           this.toastService.show('No se pudo obtener el historial de pedidos.', 'warning');
         },
       });
+  }
+
+  cargarSucursalesYRoles(): void {
+    this.http.get<any[]>(`${environment.apiUrl}/sucursales`).subscribe({
+      next: (sucursales) => {
+        this.listaSucursales = sucursales;
+        this.cdr.detectChanges();
+      },
+    });
+    this.usuarioService.listarRoles().subscribe({
+      next: (roles) => {
+        this.rolesDisponibles = roles;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  crearSucursalDesdeAdmin(): void {
+    if (this.formNuevaSucursal.invalid) {
+      this.formNuevaSucursal.markAllAsTouched();
+      return;
+    }
+
+    this.guardandoSucursal = true;
+    const val = this.formNuevaSucursal.value;
+    const payload = {
+      nombre: val.nombre!.trim(),
+      direccion: val.direccion!.trim(),
+      telefono: val.telefono?.trim() || null,
+    };
+
+    this.http.post<any>(`${environment.apiUrl}/sucursales`, payload).subscribe({
+      next: (nueva) => {
+        this.guardandoSucursal = false;
+        this.toastService.show(`Sucursal "${nueva.nombre}" registrada en Neon.`, 'success');
+        this.formNuevaSucursal.reset();
+        this.cargarSucursalesYRoles();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.guardandoSucursal = false;
+        this.toastService.show(err.error?.message || 'Error al registrar la sucursal.', 'danger');
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   onSeleccionarFotoPerfil(event: Event): void {
