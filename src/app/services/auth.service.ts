@@ -1,85 +1,68 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../environments/environment';
 import { UserRequest } from '../model/api/request/user-request';
 import { RegisterRequest } from '../model/api/request/register-request';
 import { UserResponse } from '../model/api/response/user-response';
+import { ObjectResponse } from '../model/api/response/object-response';
 import { UserSesion } from '../model/user-sesion';
+import { StorageService } from './storage.service';
+import { SessionService } from './session.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly authUrl = `${environment.apiUrl}/auth`;
-  private readonly usuariosUrl = `${environment.apiUrl}/usuarios`;
+  private readonly storageService = inject(StorageService);
+  private readonly sessionService = inject(SessionService);
 
-  private readonly TOKEN_KEY = 'sigvid_token';
-  private readonly USER_KEY = 'sigvid_user';
+  private readonly authUrl = `${environment.apiUrl}/auth`;
+  private readonly TOKEN_KEY = 'user_token';
+
+  private readonly _isLoggedIn = signal<boolean>(this.hasToken());
+  isLoggedInSignal = this._isLoggedIn.asReadonly();
 
   login(credentials: UserRequest): Observable<UserResponse> {
     return this.http.post<UserResponse>(`${this.authUrl}/login`, credentials).pipe(
-      tap((response) => this.guardarSesion(response))
+      tap((response) => this.setToken(response.token))
     );
   }
 
   register(datos: RegisterRequest): Observable<UserResponse> {
     return this.http.post<UserResponse>(`${this.authUrl}/register`, datos).pipe(
-      tap((response) => this.guardarSesion(response))
+      tap((response) => this.setToken(response.token))
     );
   }
 
-  // actualizar la contraseña
-  recuperarPassword(datos: { email: string; dni: string; nuevaPassword: string }): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.authUrl}/recuperar-password`, datos);
+  recuperarPassword(datos: { email: string; dni: string; nuevaPassword: string }): Observable<ObjectResponse<void>> {
+    return this.http.post<ObjectResponse<void>>(`${this.authUrl}/recuperar-password`, datos);
   }
 
-  // obtener datos de perfil, foto y preferencias
-  obtenerPerfil(email: string): Observable<any> {
-    return this.http.get<any>(`${this.usuariosUrl}/perfil`, { params: { email } });
+  private hasToken(): boolean {
+    return !!this.storageService.getItem(this.TOKEN_KEY);
   }
 
-  // guardar la edicion de datos del perfil
-  actualizarPerfil(datos: any): Observable<any> {
-    return this.http.put<any>(`${this.usuariosUrl}/perfil`, datos).pipe(
-      tap((actualizado) => {
-        const sesionActual = this.getUsuarioActual();
-        if (sesionActual) {
-          sesionActual.nombre = actualizado.nombre;
-          sesionActual.apellido = actualizado.apellido;
-          localStorage.setItem(this.USER_KEY, JSON.stringify(sesionActual));
-        }
-      })
-    );
-  }
-
-  private guardarSesion(response: UserResponse): void {
-    localStorage.setItem(this.TOKEN_KEY, response.token);
-    const sesion: UserSesion = {
-      email: response.email,
-      nombre: response.nombre,
-      apellido: response.apellido,
-      rol: response.rol
-    };
-    localStorage.setItem(this.USER_KEY, JSON.stringify(sesion));
+  setToken(token: string): void {
+    this.storageService.setItem(this.TOKEN_KEY, token);
+    this._isLoggedIn.set(true);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return this.storageService.getItem(this.TOKEN_KEY);
   }
 
   getUsuarioActual(): UserSesion | null {
-    const data = localStorage.getItem(this.USER_KEY);
-    return data ? JSON.parse(data) : null;
+    return this.sessionService.getInfoSession();
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    return this.hasToken();
   }
 
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
+    this.storageService.removeItem(this.TOKEN_KEY);
+    this._isLoggedIn.set(false);
   }
 }
