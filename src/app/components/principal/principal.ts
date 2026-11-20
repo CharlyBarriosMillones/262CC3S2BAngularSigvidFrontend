@@ -14,6 +14,7 @@ import { Modulo } from '../../model/modulo';
 import { Rol } from '../../model/rol';
 import { environment } from '../../environments/environment';
 import { Limites, Patrones } from '../../util/patrones';
+import { RegexConstants } from '../../util/constant';
 
 @Component({
   selector: 'app-principal',
@@ -30,6 +31,7 @@ export class Principal implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
+  public RG = RegexConstants;
 
   usuario: UserSesion | null = null;
   modulos: Modulo[] = [];
@@ -51,7 +53,6 @@ export class Principal implements OnInit {
   guardandoPerfil = false;
   guardandoSucursal = false;
 
-  // paginacion con ngx-pagination
   pageUsuarios: number = 1;
   pageSucursales: number = 1;
   pageHistorial: number = 1;
@@ -71,7 +72,7 @@ export class Principal implements OnInit {
     nombre: new FormControl('', [Validators.required, Validators.pattern(Patrones.NOMBRE)]),
     apellido: new FormControl('', [Validators.required, Validators.pattern(Patrones.NOMBRE)]),
     dni: new FormControl('', [Validators.required, Validators.pattern(Patrones.DNI)]),
-    email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(Limites.EMAIL_MAX)]),
+    email: new FormControl('', [Validators.required, Validators.email, Validators.pattern(Patrones.EMAIL), Validators.maxLength(Limites.EMAIL_MAX)]),
     telefono: new FormControl('', [Validators.pattern(Patrones.TELEFONO)]),
     password: new FormControl('', [Validators.required, Validators.minLength(Limites.PASSWORD_MIN), Validators.maxLength(Limites.PASSWORD_MAX)]),
     idRol: new FormControl<number | null>(null, [Validators.required]),
@@ -103,12 +104,28 @@ export class Principal implements OnInit {
       this.usuarioService.listarModulosPorRol(this.usuario.role.idRol).subscribe({
         next: (mods) => {
           this.modulos = mods;
+          this.redirigirADashboardInicial();
           this.cdr.detectChanges();
         },
       });
+    } else {
+      this.redirigirADashboardInicial();
     }
 
     this.cargarDatosPerfilDesdeBD();
+  }
+
+  private redirigirADashboardInicial(): void {
+    if (this.router.url === '/principal' || this.router.url === '/principal/') {
+      const firstModule =
+        this.modulos.find((m) => m.ordenOpcion === 1 && m.url?.endsWith('/dashboard')) ||
+        this.modulos.find((m) => m.url?.endsWith('/dashboard'));
+      const targetUrl = firstModule?.url || '/principal/dashboard';
+      this.moduloActivoUrl = targetUrl;
+      this.router.navigate([targetUrl]);
+    } else {
+      this.moduloActivoUrl = this.router.url;
+    }
   }
 
   esAdmin(): boolean {
@@ -134,7 +151,7 @@ export class Principal implements OnInit {
       const estado = !this.mostrarPanelPerfil;
       this.cerrarPanelesLocales();
       this.mostrarPanelPerfil = estado;
-      this.router.navigate(['/principal']);
+      this.router.navigate([estado ? '/principal' : '/principal/dashboard']);
       return;
     }
 
@@ -145,7 +162,7 @@ export class Principal implements OnInit {
       if (this.mostrarPanelUsuarios) {
         this.cargarRolesYUsuarios();
       }
-      this.router.navigate(['/principal']);
+      this.router.navigate([estado ? '/principal' : '/principal/dashboard']);
       return;
     }
 
@@ -156,7 +173,7 @@ export class Principal implements OnInit {
       if (this.mostrarPanelSucursales) {
         this.cargarSucursalesYRoles();
       }
-      this.router.navigate(['/principal']);
+      this.router.navigate([estado ? '/principal' : '/principal/dashboard']);
       return;
     }
 
@@ -167,7 +184,7 @@ export class Principal implements OnInit {
       if (this.mostrarPanelPedidosCliente) {
         this.cargarHistorialPedidosCliente();
       }
-      this.router.navigate(['/principal']);
+      this.router.navigate([estado ? '/principal' : '/principal/dashboard']);
       return;
     }
 
@@ -441,5 +458,11 @@ export class Principal implements OnInit {
     this.authService.logout();
     this.toastService.show('Sesión cerrada correctamente.', 'info');
     this.router.navigate(['/login']);
+  }
+
+  isPasswordUsuarioVisible: boolean = false;
+
+  togglePasswordUsuarioVisibility(): void {
+    this.isPasswordUsuarioVisible = !this.isPasswordUsuarioVisible;
   }
 }

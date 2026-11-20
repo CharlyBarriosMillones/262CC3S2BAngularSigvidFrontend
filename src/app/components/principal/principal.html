@@ -42,7 +42,7 @@
       <div
         class="user-info"
         style="cursor: pointer;"
-        (click)="mostrarPanelPerfil = !mostrarPanelPerfil"
+        (click)="abrirModulo({ nombre: 'Mi Perfil y Preferencias', descripcion: '', url: '/principal/perfil', icono: '' })"
         title="Haz clic para abrir tu perfil">
         <div class="user-avatar overflow-hidden">
           @if (fotoPerfilUrl) {
@@ -79,34 +79,14 @@
         <div class="banner-overlay"></div>
       </section>
 
-      <!-- Tarjetas de acceso rápido cargadas dinámicamente desde los módulos del rol -->
-      <section class="functions-section">
-        <div class="section-heading">
-          <span class="eyebrow">MÓDULOS HABILITADOS PARA TU PERFIL</span>
-          <h2>Acceso rápido a tus funciones</h2>
-          <p>Opciones cargadas dinámicamente desde la base de datos según tu rol asignado.</p>
-        </div>
-
-        <div class="function-grid">
-          @for (modulo of modulos; track modulo.idMod || modulo.nombre) {
-            <a class="function-card" href="javascript:void(0)" (click)="abrirModulo(modulo)">
-              <div class="function-icon">
-                <i class="bi {{ modulo.icono || 'bi-grid-fill' }}"></i>
-              </div>
-              <h3>{{ modulo.nombre }}</h3>
-              <p>{{ modulo.descripcion }}</p>
-              <span class="function-link">
-                <span>INGRESAR</span>
-                <i class="bi bi-arrow-right"></i>
-              </span>
-            </a>
-          }
-        </div>
+      <!-- Vista principal activa (Al iniciar sesión muestra automáticamente el Dashboard con 3 charts) -->
+      <section class="router-content mb-4">
+        <router-outlet></router-outlet>
       </section>
 
       <!-- HU02: Gestión de Perfil de Usuario -->
       @if (mostrarPanelPerfil) {
-        <section class="admin-users-panel mt-5 p-4 rounded-3">
+        <section class="admin-users-panel mb-5 p-4 rounded-3">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <span class="eyebrow">HU02 · GESTIÓN DE PERFIL DE USUARIO</span>
@@ -144,7 +124,8 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label small text-warning">NOMBRES *</label>
-                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre"
+                  <input type="text" maxlength="50" class="form-control bg-dark text-white border-secondary" formControlName="nombre"
+                    (input)="RG.name($event, formPerfil.controls.nombre)"
                     [class.is-invalid]="formPerfil.controls.nombre.invalid && formPerfil.controls.nombre.touched" />
                   @if (formPerfil.controls.nombre.touched && formPerfil.controls.nombre.hasError('required')) {
                     <div class="invalid-feedback">El nombre es obligatorio.</div>
@@ -156,7 +137,8 @@
 
                 <div class="col-md-6">
                   <label class="form-label small text-warning">APELLIDOS *</label>
-                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido"
+                  <input type="text" maxlength="50" class="form-control bg-dark text-white border-secondary" formControlName="apellido"
+                    (input)="RG.name($event, formPerfil.controls.apellido)"
                     [class.is-invalid]="formPerfil.controls.apellido.invalid && formPerfil.controls.apellido.touched" />
                   @if (formPerfil.controls.apellido.touched && formPerfil.controls.apellido.hasError('required')) {
                     <div class="invalid-feedback">El apellido es obligatorio.</div>
@@ -169,6 +151,7 @@
                 <div class="col-md-4">
                   <label class="form-label small text-warning">TELÉFONO</label>
                   <input type="text" maxlength="15" class="form-control bg-dark text-white border-secondary" formControlName="telefono"
+                    (input)="RG.number($event, formPerfil.controls.telefono)"
                     [class.is-invalid]="formPerfil.controls.telefono.invalid && formPerfil.controls.telefono.touched" />
                   @if (formPerfil.controls.telefono.touched && formPerfil.controls.telefono.invalid) {
                     <div class="invalid-feedback">Ingresa solo números (7 a 15 dígitos).</div>
@@ -184,20 +167,15 @@
                     <option value="Piscos Puros y Mosto Verde">Piscos Puros y Mosto Verde</option>
                     <option value="Corchos Naturales y Microaglomerados">Corchos de Alcornoque</option>
                   </select>
-                  @if (formPerfil.controls.preferenciaCategoria.touched && formPerfil.controls.preferenciaCategoria.invalid) {
-                    <div class="invalid-feedback">Máximo 100 caracteres, sin &lt; ni &gt;.</div>
-                  }
                 </div>
 
                 <div class="col-md-4">
                   <label class="form-label small text-warning">PREFERENCIA DE MARIDAJE</label>
                   <input type="text" maxlength="150" class="form-control bg-dark text-white border-secondary" formControlName="preferenciaMaridaje"
+                    (input)="RG.text($event, formPerfil.controls.preferenciaMaridaje)"
                     [class.is-invalid]="formPerfil.controls.preferenciaMaridaje.invalid && formPerfil.controls.preferenciaMaridaje.touched" />
-                  @if (formPerfil.controls.preferenciaMaridaje.touched && formPerfil.controls.preferenciaMaridaje.hasError('maxlength')) {
-                    <div class="invalid-feedback">Máximo 150 caracteres.</div>
-                  }
-                  @if (formPerfil.controls.preferenciaMaridaje.touched && formPerfil.controls.preferenciaMaridaje.hasError('pattern')) {
-                    <div class="invalid-feedback">No se permiten los caracteres &lt; o &gt;.</div>
+                  @if (formPerfil.controls.preferenciaMaridaje.touched && formPerfil.controls.preferenciaMaridaje.invalid) {
+                    <div class="invalid-feedback">Máximo 150 caracteres, sin &lt; ni &gt;.</div>
                   }
                 </div>
 
@@ -237,9 +215,9 @@
         </section>
       }
 
-      <!-- HU02: Visualización de Historial de Pedidos del Cliente (Conectado a BD Neon) -->
+      <!-- HU02: Visualización de Historial de Pedidos del Cliente -->
       @if (mostrarPanelPedidosCliente) {
-        <section class="admin-users-panel mt-5 p-4 rounded-3">
+        <section class="admin-users-panel mb-5 p-4 rounded-3">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <span class="eyebrow">HU02 · HISTORIAL DE COMPRAS</span>
@@ -297,7 +275,7 @@
 
       <!-- Panel de Gestión de Usuarios (Administrador) -->
       @if (mostrarPanelUsuarios && esAdmin()) {
-        <section class="admin-users-panel mt-5 p-4 rounded-3">
+        <section class="admin-users-panel mb-5 p-4 rounded-3">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <span class="eyebrow">ADMINISTRACIÓN DE ACCESOS</span>
@@ -311,7 +289,8 @@
           <form [formGroup]="formNuevoUsuario" (ngSubmit)="crearUsuarioDesdeAdmin()" class="row g-3">
             <div class="col-md-4">
               <label class="form-label small text-warning">NOMBRES *</label>
-              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombres"
+              <input type="text" maxlength="50" class="form-control bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombres"
+                (input)="RG.name($event, formNuevoUsuario.controls.nombre)"
                 [class.is-invalid]="formNuevoUsuario.controls.nombre.invalid && formNuevoUsuario.controls.nombre.touched" />
               @if (formNuevoUsuario.controls.nombre.touched && formNuevoUsuario.controls.nombre.hasError('required')) {
                 <div class="invalid-feedback">El nombre es obligatorio.</div>
@@ -322,7 +301,8 @@
             </div>
             <div class="col-md-4">
               <label class="form-label small text-warning">APELLIDOS *</label>
-              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido" placeholder="Apellidos"
+              <input type="text" maxlength="50" class="form-control bg-dark text-white border-secondary" formControlName="apellido" placeholder="Apellidos"
+                (input)="RG.name($event, formNuevoUsuario.controls.apellido)"
                 [class.is-invalid]="formNuevoUsuario.controls.apellido.invalid && formNuevoUsuario.controls.apellido.touched" />
               @if (formNuevoUsuario.controls.apellido.touched && formNuevoUsuario.controls.apellido.hasError('required')) {
                 <div class="invalid-feedback">El apellido es obligatorio.</div>
@@ -334,6 +314,7 @@
             <div class="col-md-4">
               <label class="form-label small text-warning">DNI (8 DÍGITOS) *</label>
               <input type="text" maxlength="8" class="form-control bg-dark text-white border-secondary" formControlName="dni" placeholder="12345678"
+                (input)="RG.number($event, formNuevoUsuario.controls.dni)"
                 [class.is-invalid]="formNuevoUsuario.controls.dni.invalid && formNuevoUsuario.controls.dni.touched" />
               @if (formNuevoUsuario.controls.dni.touched && formNuevoUsuario.controls.dni.invalid) {
                 <div class="invalid-feedback">Ingresa un DNI válido de 8 dígitos numéricos.</div>
@@ -341,15 +322,17 @@
             </div>
             <div class="col-md-4">
               <label class="form-label small text-warning">CORREO ELECTRÓNICO *</label>
-              <input type="email" class="form-control bg-dark text-white border-secondary" formControlName="email" placeholder="usuario@vitivinicolas.pe"
+              <input type="email" maxlength="100" class="form-control bg-dark text-white border-secondary" formControlName="email" placeholder="usuario@vitivinicolas.pe"
+                (input)="RG.email($event, formNuevoUsuario.controls.email)"
                 [class.is-invalid]="formNuevoUsuario.controls.email.invalid && formNuevoUsuario.controls.email.touched" />
               @if (formNuevoUsuario.controls.email.touched && formNuevoUsuario.controls.email.invalid) {
-                <div class="invalid-feedback">Ingresa un correo electrónico válido (máx. 100 caracteres).</div>
+                <div class="invalid-feedback">Ingresa un correo electrónico válido (ej. nombre&#64;dominio.com).</div>
               }
             </div>
             <div class="col-md-3">
               <label class="form-label small text-warning">TELÉFONO</label>
               <input type="text" maxlength="15" class="form-control bg-dark text-white border-secondary" formControlName="telefono" placeholder="999888777"
+                (input)="RG.number($event, formNuevoUsuario.controls.telefono)"
                 [class.is-invalid]="formNuevoUsuario.controls.telefono.invalid && formNuevoUsuario.controls.telefono.touched" />
               @if (formNuevoUsuario.controls.telefono.touched && formNuevoUsuario.controls.telefono.invalid) {
                 <div class="invalid-feedback">Ingresa solo números (7 a 15 dígitos).</div>
@@ -357,11 +340,26 @@
             </div>
             <div class="col-md-3">
               <label class="form-label small text-warning">CONTRASEÑA INICIAL *</label>
-              <input type="password" class="form-control bg-dark text-white border-secondary" formControlName="password" placeholder="Mín. 6 caracteres"
-                [class.is-invalid]="formNuevoUsuario.controls.password.invalid && formNuevoUsuario.controls.password.touched" />
-              @if (formNuevoUsuario.controls.password.touched && formNuevoUsuario.controls.password.invalid) {
-                <div class="invalid-feedback">Debe contener entre 6 y 64 caracteres.</div>
-              }
+              <div class="input-group has-validation">
+                <input
+                  [type]="isPasswordUsuarioVisible ? 'text' : 'password'"
+                  maxlength="64"
+                  class="form-control bg-dark text-white border-secondary"
+                  formControlName="password"
+                  placeholder="Mín. 6 caracteres"
+                  [class.is-invalid]="formNuevoUsuario.controls.password.invalid && formNuevoUsuario.controls.password.touched" />
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary text-warning"
+                  (click)="togglePasswordUsuarioVisibility()"
+                  tabindex="-1"
+                  [attr.aria-label]="isPasswordUsuarioVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                  <i [class]="isPasswordUsuarioVisible ? 'bi bi-eye-fill' : 'bi bi-eye-slash-fill'"></i>
+                </button>
+                @if (formNuevoUsuario.controls.password.touched && formNuevoUsuario.controls.password.invalid) {
+                  <div class="invalid-feedback">Debe contener entre 6 y 64 caracteres.</div>
+                }
+              </div>
             </div>
             <div class="col-md-2">
               <label class="form-label small text-warning">ROL ASIGNADO *</label>
@@ -418,7 +416,7 @@
 
       <!-- Panel de Sucursales y Roles (Administrador) -->
       @if (mostrarPanelSucursales && esAdmin()) {
-        <section class="admin-users-panel mt-5 p-4 rounded-3">
+        <section class="admin-users-panel mb-5 p-4 rounded-3">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <span class="eyebrow">CONFIGURACIÓN OPERATIVA</span>
@@ -435,29 +433,23 @@
               <form [formGroup]="formNuevaSucursal" (ngSubmit)="crearSucursalDesdeAdmin()" class="row g-2 mb-3">
                 <div class="col-md-4">
                   <input type="text" maxlength="100" class="form-control form-control-sm bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombre de sucursal *"
+                    (input)="RG.text($event, formNuevaSucursal.controls.nombre)"
                     [class.is-invalid]="formNuevaSucursal.controls.nombre.invalid && formNuevaSucursal.controls.nombre.touched" />
-                  @if (formNuevaSucursal.controls.nombre.touched && formNuevaSucursal.controls.nombre.hasError('required')) {
-                    <div class="invalid-feedback">El nombre es obligatorio.</div>
-                  }
-                  @if (formNuevaSucursal.controls.nombre.touched && formNuevaSucursal.controls.nombre.hasError('maxlength')) {
-                    <div class="invalid-feedback">Máximo 100 caracteres.</div>
-                  }
-                  @if (formNuevaSucursal.controls.nombre.touched && formNuevaSucursal.controls.nombre.hasError('pattern')) {
-                    <div class="invalid-feedback">No se permiten los caracteres &lt; o &gt;.</div>
+                  @if (formNuevaSucursal.controls.nombre.touched && formNuevaSucursal.controls.nombre.invalid) {
+                    <div class="invalid-feedback">Nombre obligatorio (máx. 100 caracteres, sin &lt; ni &gt;).</div>
                   }
                 </div>
                 <div class="col-md-5">
                   <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" formControlName="direccion" placeholder="Dirección *"
+                    (input)="RG.address($event, formNuevaSucursal.controls.direccion)"
                     [class.is-invalid]="formNuevaSucursal.controls.direccion.invalid && formNuevaSucursal.controls.direccion.touched" />
-                  @if (formNuevaSucursal.controls.direccion.touched && formNuevaSucursal.controls.direccion.hasError('required')) {
-                    <div class="invalid-feedback">La dirección es obligatoria.</div>
-                  }
-                  @if (formNuevaSucursal.controls.direccion.touched && formNuevaSucursal.controls.direccion.hasError('pattern')) {
-                    <div class="invalid-feedback">No se permiten los caracteres &lt; o &gt;.</div>
+                  @if (formNuevaSucursal.controls.direccion.touched && formNuevaSucursal.controls.direccion.invalid) {
+                    <div class="invalid-feedback">Dirección obligatoria con formato válido.</div>
                   }
                 </div>
                 <div class="col-md-3 d-flex gap-1">
                   <input type="text" maxlength="15" class="form-control form-control-sm bg-dark text-white border-secondary" formControlName="telefono" placeholder="Teléfono"
+                    (input)="RG.number($event, formNuevaSucursal.controls.telefono)"
                     [class.is-invalid]="formNuevaSucursal.controls.telefono.invalid && formNuevaSucursal.controls.telefono.touched" />
                   <button type="submit" class="btn btn-sm btn-warning fw-bold" [disabled]="formNuevaSucursal.invalid || guardandoSucursal">+</button>
                 </div>
@@ -524,10 +516,30 @@
           </div>
         </section>
       }
-      
-      <!-- Contenido de las rutas hijas (Sprint 2: Catálogo, Registrar Pedido, Registrar Pago, Derivar a Almacén) -->
-      <section class="router-content">
-        <router-outlet></router-outlet>
+
+      <!-- Tarjetas de acceso rápido cargadas dinámicamente desde los módulos del rol -->
+      <section class="functions-section mt-4">
+        <div class="section-heading">
+          <span class="eyebrow">MÓDULOS HABILITADOS PARA TU PERFIL</span>
+          <h2>Acceso rápido a tus funciones</h2>
+          <p>Opciones cargadas dinámicamente desde la base de datos según tu rol asignado.</p>
+        </div>
+
+        <div class="function-grid">
+          @for (modulo of modulos; track modulo.idMod || modulo.nombre) {
+            <a class="function-card" href="javascript:void(0)" (click)="abrirModulo(modulo)">
+              <div class="function-icon">
+                <i class="bi {{ modulo.icono || 'bi-grid-fill' }}"></i>
+              </div>
+              <h3>{{ modulo.nombre }}</h3>
+              <p>{{ modulo.descripcion }}</p>
+              <span class="function-link">
+                <span>INGRESAR</span>
+                <i class="bi bi-arrow-right"></i>
+              </span>
+            </a>
+          }
+        </div>
       </section>
 
       <footer class="dashboard-footer">
