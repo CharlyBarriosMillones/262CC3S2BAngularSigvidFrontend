@@ -1,17 +1,23 @@
 <section class="dashboard-panel p-4 rounded-3">
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
     <div>
-      <span class="eyebrow">DASHBOARD · INDICADORES DE GESTIÓN</span>
-      <h3 class="mt-1 mb-0 text-white">Ventas, Stock y Pedidos</h3>
+      <span class="eyebrow">
+        {{ esCliente ? 'MI RESUMEN · ACTIVIDAD DE COMPRAS' : 'DASHBOARD · INDICADORES DE GESTIÓN' }}
+      </span>
+      <h3 class="mt-1 mb-0 text-white">
+        {{ esCliente ? 'Mis Compras, Preferencias y Pedidos' : 'Ventas, Stock y Pedidos' }}
+      </h3>
     </div>
   </div>
 
   <div class="row g-4">
-    <!-- grafico de linea: ventas diarias -->
+    <!-- Gráfico de línea -->
     <div class="col-12">
       <div class="chart-card p-3 rounded border border-secondary bg-dark">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
-          <h6 class="text-warning text-uppercase mb-0">Ventas por día</h6>
+          <h6 class="text-warning text-uppercase mb-0">
+            {{ esCliente ? 'Mis compras por día' : 'Ventas por día' }}
+          </h6>
           <div class="d-flex align-items-center gap-2">
             <label for="diasVentas" class="small text-white-50 mb-0">Período:</label>
             <select
@@ -31,20 +37,24 @@
       </div>
     </div>
 
-    <!-- grafico radar: stock actual vs minimo -->
+    <!-- Gráfico radar -->
     <div class="col-lg-6">
       <div class="chart-card p-3 rounded border border-secondary bg-dark">
-        <h6 class="text-warning text-uppercase mb-2">Stock actual vs mínimo por categoría</h6>
+        <h6 class="text-warning text-uppercase mb-2">
+          {{ esCliente ? 'Unidades compradas vs catálogo por categoría' : 'Stock actual vs mínimo por categoría' }}
+        </h6>
         <div class="chart-box">
           <canvas baseChart type="radar" [data]="stockData" [options]="stockOptions"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- grafico polar area: pedidos por estado -->
+    <!-- Gráfico polar area -->
     <div class="col-lg-6">
       <div class="chart-card p-3 rounded border border-secondary bg-dark">
-        <h6 class="text-warning text-uppercase mb-2">Pedidos por estado</h6>
+        <h6 class="text-warning text-uppercase mb-2">
+          {{ esCliente ? 'Estado de mis pedidos' : 'Pedidos por estado' }}
+        </h6>
         <div class="chart-box">
           <canvas baseChart type="polarArea" [data]="estadosData" [options]="estadosOptions"></canvas>
         </div>

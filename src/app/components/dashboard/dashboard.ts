@@ -20,9 +20,9 @@ import {
   Tooltip,
 } from 'chart.js';
 import { DashboardService } from '../../services/dashboard.service';
+import { SessionService } from '../../services/session.service';
 import { ToastService } from '../../services/toast.service';
 
-// colores del tema (dorado/vino)
 const DORADO = '#d4b475';
 const VINO = '#8b1e3f';
 const TEXTO = '#e9e2d0';
@@ -33,7 +33,6 @@ const PALETA_ESTADOS = ['#d4b475', '#8b1e3f', '#4f8a8b', '#c97b3d', '#6c8e3a', '
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, BaseChartDirective],
-  // solo se registran los controladores usados: linea, radar y polar area (ningun pie ni bar)
   providers: [
     provideCharts({
       registerables: [
@@ -49,13 +48,14 @@ const PALETA_ESTADOS = ['#d4b475', '#8b1e3f', '#4f8a8b', '#c97b3d', '#6c8e3a', '
 })
 export class Dashboard implements OnInit {
   private readonly dashboardService = inject(DashboardService);
+  private readonly sessionService = inject(SessionService);
   private readonly toastService = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
 
+  esCliente: boolean = false;
   opcionesDias: number[] = [7, 30, 90];
   diasControl = new FormControl<number>(30, { nonNullable: true, validators: [Validators.required] });
 
-  // 1. linea: ventas diarias
   ventasData: ChartData<'line'> = { labels: [], datasets: [] };
   ventasOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
@@ -69,7 +69,6 @@ export class Dashboard implements OnInit {
     },
   };
 
-  // 2. radar: stock actual vs minimo por categoria
   stockData: ChartData<'radar'> = { labels: [], datasets: [] };
   stockOptions: ChartConfiguration<'radar'>['options'] = {
     responsive: true,
@@ -81,12 +80,11 @@ export class Dashboard implements OnInit {
         angleLines: { color: REJILLA },
         grid: { color: REJILLA },
         pointLabels: { color: TEXTO },
-        ticks: { color: TEXTO, backdropColor: 'transparent' },
+        ticks: { color: TEXTO, backdropColor: 'transparent', precision: 0 },
       },
     },
   };
 
-  // 3. polar area: pedidos por estado
   estadosData: ChartData<'polarArea'> = { labels: [], datasets: [] };
   estadosOptions: ChartConfiguration<'polarArea'>['options'] = {
     responsive: true,
@@ -98,6 +96,9 @@ export class Dashboard implements OnInit {
   };
 
   ngOnInit(): void {
+    const sesion = this.sessionService.getInfoSession();
+    this.esCliente = (sesion?.rol?.toLowerCase().trim() || 'cliente') === 'cliente';
+
     this.cargarVentas();
     this.cargarStock();
     this.cargarEstados();
@@ -110,7 +111,7 @@ export class Dashboard implements OnInit {
           labels: ventas.map((v) => v.fecha.substring(5)),
           datasets: [
             {
-              label: 'Ventas (S/)',
+              label: this.esCliente ? 'Mis compras (S/)' : 'Ventas (S/)',
               data: ventas.map((v) => v.total),
               borderColor: DORADO,
               backgroundColor: 'rgba(212, 180, 117, 0.25)',
@@ -119,7 +120,7 @@ export class Dashboard implements OnInit {
               yAxisID: 'y',
             },
             {
-              label: 'N° pedidos',
+              label: this.esCliente ? 'N° de mis pedidos' : 'N° pedidos',
               data: ventas.map((v) => v.pedidos),
               borderColor: VINO,
               backgroundColor: VINO,
@@ -131,7 +132,7 @@ export class Dashboard implements OnInit {
         };
         this.cdr.detectChanges();
       },
-      error: (err: HttpErrorResponse) => this.mostrarError(err, 'ventas diarias'),
+      error: (err: HttpErrorResponse) => this.mostrarError(err, this.esCliente ? 'mis compras diarias' : 'ventas diarias'),
     });
   }
 
@@ -142,14 +143,14 @@ export class Dashboard implements OnInit {
           labels: stock.map((s) => s.categoria),
           datasets: [
             {
-              label: 'Stock actual',
+              label: this.esCliente ? 'Unidades compradas' : 'Stock actual',
               data: stock.map((s) => s.stockActual),
               borderColor: DORADO,
               backgroundColor: 'rgba(212, 180, 117, 0.3)',
               pointBackgroundColor: DORADO,
             },
             {
-              label: 'Stock mínimo',
+              label: this.esCliente ? 'Productos en catálogo' : 'Stock mínimo',
               data: stock.map((s) => s.stockMinimo),
               borderColor: VINO,
               backgroundColor: 'rgba(139, 30, 63, 0.3)',
@@ -159,7 +160,7 @@ export class Dashboard implements OnInit {
         };
         this.cdr.detectChanges();
       },
-      error: (err: HttpErrorResponse) => this.mostrarError(err, 'stock por categoría'),
+      error: (err: HttpErrorResponse) => this.mostrarError(err, this.esCliente ? 'consumo por categoría' : 'stock por categoría'),
     });
   }
 
@@ -170,7 +171,7 @@ export class Dashboard implements OnInit {
           labels: estados.map((e) => e.estado),
           datasets: [
             {
-              label: 'Pedidos',
+              label: this.esCliente ? 'Mis pedidos' : 'Pedidos',
               data: estados.map((e) => e.cantidad),
               backgroundColor: estados.map((_, i) => PALETA_ESTADOS[i % PALETA_ESTADOS.length] + 'cc'),
               borderColor: '#141210',
@@ -187,4 +188,3 @@ export class Dashboard implements OnInit {
     this.toastService.show(err.error?.message || `No se pudo cargar el gráfico de ${grafico}.`, 'danger');
   }
 }
-
