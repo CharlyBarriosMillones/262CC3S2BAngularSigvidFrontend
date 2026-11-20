@@ -2,52 +2,28 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-import { Rol } from '../model/rol';
-import { Modulo } from '../model/modulo';
+import { GuiaDespachoResponse } from '../model/guia-despacho';
+import { RecepcionRequest } from '../model/recepcion';
 import { ObjectResponse } from '../model/api/response/object-response';
 
 @Injectable({
   providedIn: 'root',
 })
-export class UsuarioService {
+export class RecepcionService {
   private readonly http = inject(HttpClient);
-  private readonly usuariosUrl = `${environment.apiUrl}/usuarios`;
-  private readonly rolesUrl = `${environment.apiUrl}/roles`;
-  private readonly modulosUrl = `${environment.apiUrl}/modulos`;
+  private readonly apiUrl = `${environment.apiUrl}/recepcion`;
 
-  listarUsuarios(): Observable<any[]> {
-    return this.http.get<any[]>(this.usuariosUrl);
+  listarPedidosEnTransito(): Observable<GuiaDespachoResponse[]> {
+    return this.http.get<GuiaDespachoResponse[]>(`${this.apiUrl}/pedidos`);
   }
 
-  crearUsuario(payload: any): Observable<any> {
-    return this.http.post<any>(this.usuariosUrl, payload);
-  }
-
-  actualizarUsuario(id: number, payload: any): Observable<any> {
-    return this.http.put<any>(`${this.usuariosUrl}/${id}`, payload);
-  }
-
-  eliminarUsuario(id: number): Observable<ObjectResponse<void>> {
-    return this.http.delete<ObjectResponse<void>>(`${this.usuariosUrl}/${id}`);
-  }
-
-  obtenerPerfil(email: string): Observable<any> {
-    return this.http.get<any>(`${this.usuariosUrl}/perfil`, { params: { email } });
-  }
-
-  actualizarPerfil(datos: any): Observable<any> {
-    return this.http.put<any>(`${this.usuariosUrl}/perfil`, datos);
-  }
-
-  buscarPorDocumento(documento: string): Observable<any> {
-    return this.http.get<any>(`${this.usuariosUrl}/buscar-documento/${documento}`);
-  }
-
-  listarRoles(): Observable<Rol[]> {
-    return this.http.get<Rol[]>(this.rolesUrl);
-  }
-
-  listarModulosPorRol(idRol: number): Observable<Modulo[]> {
-    return this.http.get<Modulo[]>(`${this.modulosUrl}/rol/${idRol}`);
+  confirmarRecepcion(
+    idPedido: number,
+    request: RecepcionRequest
+  ): Observable<ObjectResponse<GuiaDespachoResponse>> {
+    return this.http.post<ObjectResponse<GuiaDespachoResponse>>(
+      `${this.apiUrl}/pedidos/${idPedido}/confirmar`,
+      request
+    );
   }
 }

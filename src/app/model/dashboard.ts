@@ -1,13 +1,16 @@
-import { Modulo } from './modulo';
-import { Rol } from './rol';
+export interface VentaDiariaResponse {
+  fecha: string;
+  total: number;
+  pedidos: number;
+}
 
-export interface UserSesion {
-  usuarioId: number;
-  email: string;
-  names: string;
-  nombre: string;
-  apellido: string;
-  rol: string;
-  role?: Rol;
-  modulos: Modulo[];
+export interface StockCategoriaResponse {
+  categoria: string;
+  stockActual: number;
+  stockMinimo: number;
+}
+
+export interface PedidosEstadoResponse {
+  estado: string;
+  cantidad: number;
 }

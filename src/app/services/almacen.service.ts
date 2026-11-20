@@ -1,53 +1,69 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-import { Rol } from '../model/rol';
-import { Modulo } from '../model/modulo';
+import { PedidoResponse } from '../model/pedido';
+import {
+  AsignacionRequest,
+  GuiaDespachoResponse,
+  PedidoAlmacenDetalleResponse,
+} from '../model/guia-despacho';
 import { ObjectResponse } from '../model/api/response/object-response';
 
 @Injectable({
   providedIn: 'root',
 })
-export class UsuarioService {
+export class AlmacenService {
   private readonly http = inject(HttpClient);
-  private readonly usuariosUrl = `${environment.apiUrl}/usuarios`;
-  private readonly rolesUrl = `${environment.apiUrl}/roles`;
-  private readonly modulosUrl = `${environment.apiUrl}/modulos`;
+  private readonly apiUrl = `${environment.apiUrl}/almacen`;
 
-  listarUsuarios(): Observable<any[]> {
-    return this.http.get<any[]>(this.usuariosUrl);
+  listarPedidosPendientes(): Observable<PedidoResponse[]> {
+    return this.http.get<PedidoResponse[]>(`${this.apiUrl}/pedidos-pendientes`);
   }
 
-  crearUsuario(payload: any): Observable<any> {
-    return this.http.post<any>(this.usuariosUrl, payload);
+  obtenerDetallePedido(idPedido: number, idAlmacen?: number | null): Observable<PedidoAlmacenDetalleResponse> {
+    let params = new HttpParams();
+    if (idAlmacen) {
+      params = params.set('idAlmacen', idAlmacen.toString());
+    }
+    return this.http.get<PedidoAlmacenDetalleResponse>(`${this.apiUrl}/pedidos/${idPedido}/detalle`, { params });
   }
 
-  actualizarUsuario(id: number, payload: any): Observable<any> {
-    return this.http.put<any>(`${this.usuariosUrl}/${id}`, payload);
+  asignarProductos(idPedido: number, request: AsignacionRequest): Observable<ObjectResponse<GuiaDespachoResponse>> {
+    return this.http.post<ObjectResponse<GuiaDespachoResponse>>(
+      `${this.apiUrl}/pedidos/${idPedido}/asignar`,
+      request
+    );
   }
 
-  eliminarUsuario(id: number): Observable<ObjectResponse<void>> {
-    return this.http.delete<ObjectResponse<void>>(`${this.usuariosUrl}/${id}`);
+  listarGuias(estado?: string): Observable<GuiaDespachoResponse[]> {
+    let params = new HttpParams();
+    if (estado && estado.trim().length > 0) {
+      params = params.set('estado', estado.trim());
+    }
+    return this.http.get<GuiaDespachoResponse[]>(`${this.apiUrl}/guias`, { params });
   }
 
-  obtenerPerfil(email: string): Observable<any> {
-    return this.http.get<any>(`${this.usuariosUrl}/perfil`, { params: { email } });
+  obtenerGuia(idGuia: number): Observable<GuiaDespachoResponse> {
+    return this.http.get<GuiaDespachoResponse>(`${this.apiUrl}/guias/${idGuia}`);
   }
 
-  actualizarPerfil(datos: any): Observable<any> {
-    return this.http.put<any>(`${this.usuariosUrl}/perfil`, datos);
+  registrarEscaneo(
+    idGuia: number,
+    idDetalle: number,
+    codigoQr?: string
+  ): Observable<ObjectResponse<GuiaDespachoResponse>> {
+    const body = codigoQr ? { codigoQr } : {};
+    return this.http.put<ObjectResponse<GuiaDespachoResponse>>(
+      `${this.apiUrl}/guias/${idGuia}/detalles/${idDetalle}/escanear`,
+      body
+    );
   }
 
-  buscarPorDocumento(documento: string): Observable<any> {
-    return this.http.get<any>(`${this.usuariosUrl}/buscar-documento/${documento}`);
-  }
-
-  listarRoles(): Observable<Rol[]> {
-    return this.http.get<Rol[]>(this.rolesUrl);
-  }
-
-  listarModulosPorRol(idRol: number): Observable<Modulo[]> {
-    return this.http.get<Modulo[]>(`${this.modulosUrl}/rol/${idRol}`);
+  confirmarSalida(idGuia: number): Observable<ObjectResponse<GuiaDespachoResponse>> {
+    return this.http.post<ObjectResponse<GuiaDespachoResponse>>(
+      `${this.apiUrl}/guias/${idGuia}/confirmar-salida`,
+      {}
+    );
   }
 }

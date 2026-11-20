@@ -1,53 +1,52 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-import { Rol } from '../model/rol';
-import { Modulo } from '../model/modulo';
+import { AlmacenResponse, StockResponse, Ubigeo } from '../model/stock';
 import { ObjectResponse } from '../model/api/response/object-response';
 
 @Injectable({
   providedIn: 'root',
 })
-export class UsuarioService {
+export class StockService {
   private readonly http = inject(HttpClient);
-  private readonly usuariosUrl = `${environment.apiUrl}/usuarios`;
-  private readonly rolesUrl = `${environment.apiUrl}/roles`;
-  private readonly modulosUrl = `${environment.apiUrl}/modulos`;
+  private readonly apiUrl = environment.apiUrl;
 
-  listarUsuarios(): Observable<any[]> {
-    return this.http.get<any[]>(this.usuariosUrl);
+  consultarStock(filtros?: {
+    termino?: string | null;
+    idCategoria?: number | null;
+    idAlmacen?: number | null;
+    idUbigeo?: string | null;
+    estado?: string | null;
+  }): Observable<StockResponse[]> {
+    let params = new HttpParams();
+    if (filtros?.termino && filtros.termino.trim().length > 0) {
+      params = params.set('termino', filtros.termino.trim());
+    }
+    if (filtros?.idCategoria) {
+      params = params.set('idCategoria', filtros.idCategoria.toString());
+    }
+    if (filtros?.idAlmacen) {
+      params = params.set('idAlmacen', filtros.idAlmacen.toString());
+    }
+    if (filtros?.idUbigeo) {
+      params = params.set('idUbigeo', filtros.idUbigeo);
+    }
+    if (filtros?.estado) {
+      params = params.set('estado', filtros.estado);
+    }
+    return this.http.get<StockResponse[]>(`${this.apiUrl}/stock`, { params });
   }
 
-  crearUsuario(payload: any): Observable<any> {
-    return this.http.post<any>(this.usuariosUrl, payload);
+  confirmarStock(idStock: number): Observable<ObjectResponse<StockResponse>> {
+    return this.http.put<ObjectResponse<StockResponse>>(`${this.apiUrl}/stock/${idStock}/confirmar`, {});
   }
 
-  actualizarUsuario(id: number, payload: any): Observable<any> {
-    return this.http.put<any>(`${this.usuariosUrl}/${id}`, payload);
+  listarAlmacenes(): Observable<AlmacenResponse[]> {
+    return this.http.get<AlmacenResponse[]>(`${this.apiUrl}/almacenes`);
   }
 
-  eliminarUsuario(id: number): Observable<ObjectResponse<void>> {
-    return this.http.delete<ObjectResponse<void>>(`${this.usuariosUrl}/${id}`);
-  }
-
-  obtenerPerfil(email: string): Observable<any> {
-    return this.http.get<any>(`${this.usuariosUrl}/perfil`, { params: { email } });
-  }
-
-  actualizarPerfil(datos: any): Observable<any> {
-    return this.http.put<any>(`${this.usuariosUrl}/perfil`, datos);
-  }
-
-  buscarPorDocumento(documento: string): Observable<any> {
-    return this.http.get<any>(`${this.usuariosUrl}/buscar-documento/${documento}`);
-  }
-
-  listarRoles(): Observable<Rol[]> {
-    return this.http.get<Rol[]>(this.rolesUrl);
-  }
-
-  listarModulosPorRol(idRol: number): Observable<Modulo[]> {
-    return this.http.get<Modulo[]>(`${this.modulosUrl}/rol/${idRol}`);
+  listarUbigeos(): Observable<Ubigeo[]> {
+    return this.http.get<Ubigeo[]>(`${this.apiUrl}/ubigeos`);
   }
 }
