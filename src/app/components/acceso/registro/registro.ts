@@ -6,6 +6,7 @@ import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { RegisterRequest } from '../../../model/api/request/register-request';
 import { Limites, Patrones } from '../../../util/patrones';
+import { RegexConstants } from '../../../util/constant';
 
 @Component({
   selector: 'app-registro',
@@ -19,6 +20,7 @@ export class Registro {
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
+  public RG = RegexConstants;
 
   errorMessage: string = '';
   cargando: boolean = false;
@@ -33,8 +35,17 @@ export class Registro {
     apellido: new FormControl('', [Validators.required, Validators.maxLength(50), Validators.pattern(Patrones.NOMBRE)]),
     dni: new FormControl('', [Validators.required, Validators.pattern(Patrones.DNI)]),
     telefono: new FormControl('', [Validators.pattern(Patrones.TELEFONO)]),
-    email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(Limites.EMAIL_MAX)]),
-    password: new FormControl('', [Validators.required, Validators.minLength(Limites.PASSWORD_MIN), Validators.maxLength(Limites.PASSWORD_MAX)]),
+    email: new FormControl('', [
+      Validators.required,
+      Validators.email,
+      Validators.pattern(Patrones.EMAIL),
+      Validators.maxLength(Limites.EMAIL_MAX),
+    ]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(Limites.PASSWORD_MIN),
+      Validators.maxLength(Limites.PASSWORD_MAX),
+    ]),
     ruc: new FormControl('', [Validators.pattern(Patrones.RUC)]),
     razonSocial: new FormControl('', [Validators.maxLength(150), Validators.pattern(Patrones.TEXTO_SEGURO)]),
     direccion: new FormControl('', [Validators.pattern(Patrones.TEXTO_SEGURO)]),
@@ -101,7 +112,7 @@ export class Registro {
         this.cargando = false;
         this.toastService.show(`Cuenta creada exitosamente. ¡Bienvenido(a), ${res.nombre}!`, 'success');
         this.cdr.detectChanges();
-        this.router.navigate(['/principal']);
+        this.router.navigate(['/principal/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
         this.cargando = false;
@@ -111,5 +122,11 @@ export class Registro {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  isPasswordVisible: boolean = false;
+
+  togglePasswordVisibility(): void {
+    this.isPasswordVisible = !this.isPasswordVisible;
   }
 }

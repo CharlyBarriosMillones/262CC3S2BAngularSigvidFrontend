@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { Limites, Patrones } from '../../../util/patrones';
+import { RegexConstants } from '../../../util/constant';
 
 @Component({
   selector: 'app-inicio-sesion',
@@ -18,6 +19,7 @@ export class InicioSesion implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
+  public RG = RegexConstants;
 
   errorMessage: string = '';
   successMessage: string = '';
@@ -25,20 +27,38 @@ export class InicioSesion implements OnInit {
   modoRecuperacion: boolean = false;
 
   form = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(Limites.EMAIL_MAX)]),
-    password: new FormControl('', [Validators.required, Validators.minLength(Limites.PASSWORD_MIN), Validators.maxLength(Limites.PASSWORD_MAX)]),
+    email: new FormControl('', [
+      Validators.required,
+      Validators.email,
+      Validators.pattern(Patrones.EMAIL),
+      Validators.maxLength(Limites.EMAIL_MAX),
+    ]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(Limites.PASSWORD_MIN),
+      Validators.maxLength(Limites.PASSWORD_MAX),
+    ]),
     recordarSesion: new FormControl(true),
   });
 
   formRecuperacion = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(Limites.EMAIL_MAX)]),
+    email: new FormControl('', [
+      Validators.required,
+      Validators.email,
+      Validators.pattern(Patrones.EMAIL),
+      Validators.maxLength(Limites.EMAIL_MAX),
+    ]),
     dni: new FormControl('', [Validators.required, Validators.pattern(Patrones.DNI)]),
-    nuevaPassword: new FormControl('', [Validators.required, Validators.minLength(Limites.PASSWORD_MIN), Validators.maxLength(Limites.PASSWORD_MAX)]),
+    nuevaPassword: new FormControl('', [
+      Validators.required,
+      Validators.minLength(Limites.PASSWORD_MIN),
+      Validators.maxLength(Limites.PASSWORD_MAX),
+    ]),
   });
 
   ngOnInit(): void {
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/principal']);
+      this.router.navigate(['/principal/dashboard']);
     }
   }
 
@@ -61,7 +81,7 @@ export class InicioSesion implements OnInit {
         this.cargando = false;
         this.toastService.show(`Bienvenido(a), ${res.nombre} (${res.rol})`, 'success');
         this.cdr.detectChanges();
-        this.router.navigate(['/principal']);
+        this.router.navigate(['/principal/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
         this.cargando = false;
@@ -117,5 +137,16 @@ export class InicioSesion implements OnInit {
 
   onBack(): void {
     this.router.navigate(['']);
+  }
+
+  isPasswordVisible: boolean = false;
+  isNuevaPasswordVisible: boolean = false;
+
+  togglePasswordVisibility(): void {
+    this.isPasswordVisible = !this.isPasswordVisible;
+  }
+
+  toggleNuevaPasswordVisibility(): void {
+    this.isNuevaPasswordVisible = !this.isNuevaPasswordVisible;
   }
 }

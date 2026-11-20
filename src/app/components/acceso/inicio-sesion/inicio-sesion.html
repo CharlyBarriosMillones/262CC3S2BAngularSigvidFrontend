@@ -1,6 +1,4 @@
 <section class="login-page container-fluid min-vh-100 d-flex flex-column align-items-center px-3">
-
-  <!-- encabezado / marca -->
   <header class="login-header text-center">
     <div class="brand">
       <span class="brand-subtitle">BIENVENIDO A</span>
@@ -9,14 +7,11 @@
     </div>
   </header>
 
-  <!-- contenido principal -->
   <main class="login-container w-100">
-
     <div class="row justify-content-center">
       <div class="col-12 col-md-10 col-lg-8 col-xl-7">
 
         @if (!modoRecuperacion) {
-
           <header class="login-heading mb-4">
             <span class="section-label">TU CUENTA</span>
             <h2 class="mt-2">INICIAR SESIÓN</h2>
@@ -31,143 +26,83 @@
           }
 
           <form [formGroup]="form" (ngSubmit)="login()">
-
-            <!-- correo -->
             <div class="mb-4">
-              <label for="email" class="form-label">
-                CORREO ELECTRÓNICO
-              </label>
-
+              <label for="email" class="form-label">CORREO ELECTRÓNICO</label>
               <input
                 type="email"
                 id="email"
+                maxlength="100"
                 class="form-control login-input"
                 formControlName="email"
                 placeholder="nombre@correo.com"
                 autocomplete="email"
-                [class.is-invalid]="
-                  form.controls.email.invalid &&
-                  form.controls.email.touched
-                "
-              />
-
-              @if (form.controls.email.touched &&
-                   form.controls.email.hasError('required')) {
-                <div class="invalid-feedback">
-                  El correo electrónico es obligatorio.
-                </div>
+                (input)="RG.email($event, form.controls.email)"
+                [class.is-invalid]="form.controls.email.invalid && form.controls.email.touched" />
+              @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+                <div class="invalid-feedback">El correo electrónico es obligatorio.</div>
               }
-
-              @if (form.controls.email.touched &&
-                   (form.controls.email.hasError('email') || form.controls.email.hasError('maxlength'))) {
-                <div class="invalid-feedback">
-                  Introduce un correo electrónico válido.
-                </div>
+              @if (form.controls.email.touched && (form.controls.email.hasError('email') || form.controls.email.hasError('pattern') || form.controls.email.hasError('maxlength'))) {
+                <div class="invalid-feedback">Introduce un correo electrónico válido (ej. nombre&#64;dominio.com).</div>
               }
             </div>
 
-            <!-- contraseña -->
             <div class="mb-4">
-              <label for="passwordPersona" class="form-label">
-                CONTRASEÑA
-              </label>
-
-              <input
-                type="password"
-                id="passwordPersona"
-                class="form-control login-input"
-                formControlName="password"
-                placeholder="Introduce tu contraseña"
-                autocomplete="current-password"
-                [class.is-invalid]="
-                  form.controls.password.invalid &&
-                  form.controls.password.touched
-                "
-              />
-
-              @if (form.controls.password.touched &&
-                   form.controls.password.hasError('required')) {
-                <div class="invalid-feedback">
-                  La contraseña es obligatoria.
-                </div>
-              }
-
-              @if (form.controls.password.touched &&
-                   (form.controls.password.hasError('minlength') || form.controls.password.hasError('maxlength'))) {
-                <div class="invalid-feedback">
-                  Debe contener al menos 6 caracteres.
-                </div>
-              }
+              <label for="passwordPersona" class="form-label">CONTRASEÑA</label>
+              <div class="input-group has-validation">
+                <input
+                  [type]="isPasswordVisible ? 'text' : 'password'"
+                  id="passwordPersona"
+                  maxlength="64"
+                  class="form-control login-input"
+                  formControlName="password"
+                  placeholder="Introduce tu contraseña"
+                  autocomplete="current-password"
+                  [class.is-invalid]="form.controls.password.invalid && form.controls.password.touched" />
+                <button
+                  type="button"
+                  class="btn btn-toggle-eye"
+                  (click)="togglePasswordVisibility()"
+                  tabindex="-1"
+                  [attr.aria-label]="isPasswordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                  <i [class]="isPasswordVisible ? 'bi bi-eye-fill' : 'bi bi-eye-slash-fill'"></i>
+                </button>
+                @if (form.controls.password.touched && form.controls.password.hasError('required')) {
+                  <div class="invalid-feedback">La contraseña es obligatoria.</div>
+                }
+                @if (form.controls.password.touched && (form.controls.password.hasError('minlength') || form.controls.password.hasError('maxlength'))) {
+                  <div class="invalid-feedback">Debe contener entre 6 y 64 caracteres.</div>
+                }
+              </div>
             </div>
 
-            <!-- inicio de sesion y recuperacion de contraseña -->
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
               <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  id="recordarSesion"
-                  formControlName="recordarSesion"
-                />
-                <label class="form-check-label small text-light" for="recordarSesion">
-                  Mantener sesión iniciada
-                </label>
+                <input class="form-check-input" type="checkbox" id="recordarSesion" formControlName="recordarSesion" />
+                <label class="form-check-label small text-light" for="recordarSesion">Mantener sesión iniciada</label>
               </div>
-
-              <a
-                href="javascript:void(0)"
-                (click)="toggleRecuperacion()"
-                class="small text-warning text-decoration-none">
+              <a href="javascript:void(0)" (click)="toggleRecuperacion()" class="small text-warning text-decoration-none">
                 ¿Olvidaste tu contraseña?
               </a>
             </div>
 
-            <!-- alerta de error que viene del Backend -->
             @if (errorMessage) {
-              <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">
-                {{ errorMessage }}
-              </div>
+              <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">{{ errorMessage }}</div>
             }
 
-            <!-- botones -->
             <div class="d-flex flex-column gap-3 mt-5">
-
-              <button
-                type="submit"
-                class="btn btn-login w-100"
-                [disabled]="form.invalid || cargando"
-              >
-                @if (cargando) {
-                  VALIDANDO...
-                } @else {
-                  INGRESAR <span class="ms-2">→</span>
-                }
+              <button type="submit" class="btn btn-login w-100" [disabled]="form.invalid || cargando">
+                @if (cargando) { VALIDANDO... } @else { INGRESAR <span class="ms-2">→</span> }
               </button>
-
-              <button
-                type="button"
-                class="btn btn-back w-100"
-                (click)="onBack()"
-              >
-                VOLVER
-              </button>
-
+              <button type="button" class="btn btn-back w-100" (click)="onBack()">VOLVER</button>
             </div>
-
           </form>
 
-          <!-- registro -->
           <footer class="login-footer text-center mt-5 pt-4">
             <p>¿AÚN NO TIENES UNA CUENTA?</p>
-
-            <a routerLink="/register">
-              CREAR UNA CUENTA
-            </a>
+            <a routerLink="/register">CREAR UNA CUENTA</a>
           </footer>
 
         } @else {
-
-          <!-- recuperacion de contraseña -->
           <header class="login-heading mb-4">
             <span class="section-label">RECUPERACIÓN DE ACCESO</span>
             <h2 class="mt-2">RESTABLECER CONTRASEÑA</h2>
@@ -176,35 +111,24 @@
           </header>
 
           <form [formGroup]="formRecuperacion" (ngSubmit)="recuperarPassword()">
-
-            <!-- correo que se va a recuperar -->
             <div class="mb-4">
-              <label for="emailRec" class="form-label">
-                CORREO ELECTRÓNICO REGISTRADO
-              </label>
+              <label for="emailRec" class="form-label">CORREO ELECTRÓNICO REGISTRADO</label>
               <input
                 type="email"
                 id="emailRec"
+                maxlength="100"
                 class="form-control login-input"
                 formControlName="email"
                 placeholder="nombre@correo.com"
-                [class.is-invalid]="
-                  formRecuperacion.controls.email.invalid &&
-                  formRecuperacion.controls.email.touched
-                "
-              />
+                (input)="RG.email($event, formRecuperacion.controls.email)"
+                [class.is-invalid]="formRecuperacion.controls.email.invalid && formRecuperacion.controls.email.touched" />
               @if (formRecuperacion.controls.email.touched && formRecuperacion.controls.email.invalid) {
-                <div class="invalid-feedback">
-                  Introduce un correo electrónico válido.
-                </div>
+                <div class="invalid-feedback">Introduce un correo electrónico válido (ej. nombre&#64;dominio.com).</div>
               }
             </div>
 
-            <!-- DNI de verificacion -->
             <div class="mb-4">
-              <label for="dniRec" class="form-label">
-                DNI DE VERIFICACIÓN (8 DÍGITOS)
-              </label>
+              <label for="dniRec" class="form-label">DNI DE VERIFICACIÓN (8 DÍGITOS)</label>
               <input
                 type="text"
                 id="dniRec"
@@ -212,82 +136,56 @@
                 class="form-control login-input"
                 formControlName="dni"
                 placeholder="12345678"
-                [class.is-invalid]="
-                  formRecuperacion.controls.dni.invalid &&
-                  formRecuperacion.controls.dni.touched
-                "
-              />
+                (input)="RG.number($event, formRecuperacion.controls.dni)"
+                [class.is-invalid]="formRecuperacion.controls.dni.invalid && formRecuperacion.controls.dni.touched" />
               @if (formRecuperacion.controls.dni.touched && formRecuperacion.controls.dni.invalid) {
-                <div class="invalid-feedback">
-                  Ingresa los 8 dígitos de tu DNI.
-                </div>
+                <div class="invalid-feedback">Ingresa los 8 dígitos numéricos de tu DNI.</div>
               }
             </div>
 
-            <!-- nueva contraseña -->
             <div class="mb-4">
-              <label for="nuevaPass" class="form-label">
-                NUEVA CONTRASEÑA
-              </label>
-              <input
-                type="password"
-                id="nuevaPass"
-                class="form-control login-input"
-                formControlName="nuevaPassword"
-                placeholder="Mínimo 6 caracteres"
-                [class.is-invalid]="
-                  formRecuperacion.controls.nuevaPassword.invalid &&
-                  formRecuperacion.controls.nuevaPassword.touched
-                "
-              />
-              @if (formRecuperacion.controls.nuevaPassword.touched && formRecuperacion.controls.nuevaPassword.invalid) {
-                <div class="invalid-feedback">
-                  Debe contener entre 6 y 64 caracteres.
-                </div>
-              }
+              <label for="nuevaPass" class="form-label">NUEVA CONTRASEÑA</label>
+              <div class="input-group has-validation">
+                <input
+                  [type]="isNuevaPasswordVisible ? 'text' : 'password'"
+                  id="nuevaPass"
+                  maxlength="64"
+                  class="form-control login-input"
+                  formControlName="nuevaPassword"
+                  placeholder="Mínimo 6 caracteres"
+                  [class.is-invalid]="formRecuperacion.controls.nuevaPassword.invalid && formRecuperacion.controls.nuevaPassword.touched" />
+                <button
+                  type="button"
+                  class="btn btn-toggle-eye"
+                  (click)="toggleNuevaPasswordVisibility()"
+                  tabindex="-1"
+                  [attr.aria-label]="isNuevaPasswordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                  <i [class]="isNuevaPasswordVisible ? 'bi bi-eye-fill' : 'bi bi-eye-slash-fill'"></i>
+                </button>
+                @if (formRecuperacion.controls.nuevaPassword.touched && formRecuperacion.controls.nuevaPassword.invalid) {
+                  <div class="invalid-feedback">Debe contener entre 6 y 64 caracteres.</div>
+                }
+              </div>
             </div>
 
-            <!-- alerta de error que viene del backend -->
             @if (errorMessage) {
-              <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">
-                {{ errorMessage }}
-              </div>
+              <div class="alert alert-danger mt-3 mb-0 py-2 text-center" role="alert">{{ errorMessage }}</div>
             }
 
-            <!-- botones de recuperacion -->
             <div class="d-flex flex-column gap-3 mt-5">
-              <button
-                type="submit"
-                class="btn btn-login w-100"
-                [disabled]="formRecuperacion.invalid || cargando"
-              >
-                @if (cargando) {
-                  PROCESANDO...
-                } @else {
-                  ACTUALIZAR CONTRASEÑA <span class="ms-2">→</span>
-                }
+              <button type="submit" class="btn btn-login w-100" [disabled]="formRecuperacion.invalid || cargando">
+                @if (cargando) { PROCESANDO... } @else { ACTUALIZAR CONTRASEÑA <span class="ms-2">→</span> }
               </button>
-
-              <button
-                type="button"
-                class="btn btn-back w-100"
-                (click)="toggleRecuperacion()"
-              >
-                VOLVER A INICIAR SESIÓN
-              </button>
+              <button type="button" class="btn btn-back w-100" (click)="toggleRecuperacion()">VOLVER A INICIAR SESIÓN</button>
             </div>
-
           </form>
-
         }
 
       </div>
     </div>
-
   </main>
 
   <footer class="page-footer mt-auto pt-5 text-center">
     <span>EXCELENCIA · CONFIANZA · TRADICIÓN</span>
   </footer>
-
 </section>

@@ -1,1 +1,17 @@
 @use '../inicio-sesion/inicio-sesion.scss';
+
+.btn-toggle-eye {
+  min-width: 54px;
+  color: var(--gold-light);
+  background-color: transparent;
+  border: 2px solid #e9e7e2;
+  border-left: 0;
+  border-radius: 0;
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+
+  &:hover {
+    color: var(--white);
+    background-color: rgba(197, 181, 142, 0.12);
+    border-color: var(--gold-light);
+  }
+}
