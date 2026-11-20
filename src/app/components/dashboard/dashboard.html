@@ -1,0 +1,54 @@
+<section class="dashboard-panel p-4 rounded-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <span class="eyebrow">DASHBOARD · INDICADORES DE GESTIÓN</span>
+      <h3 class="mt-1 mb-0 text-white">Ventas, Stock y Pedidos</h3>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- grafico de linea: ventas diarias -->
+    <div class="col-12">
+      <div class="chart-card p-3 rounded border border-secondary bg-dark">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+          <h6 class="text-warning text-uppercase mb-0">Ventas por día</h6>
+          <div class="d-flex align-items-center gap-2">
+            <label for="diasVentas" class="small text-white-50 mb-0">Período:</label>
+            <select
+              id="diasVentas"
+              class="form-select form-select-sm bg-dark text-white border-secondary w-auto"
+              [formControl]="diasControl"
+              (change)="cargarVentas()">
+              @for (d of opcionesDias; track d) {
+                <option [ngValue]="d">Últimos {{ d }} días</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="chart-box">
+          <canvas baseChart type="line" [data]="ventasData" [options]="ventasOptions"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- grafico radar: stock actual vs minimo -->
+    <div class="col-lg-6">
+      <div class="chart-card p-3 rounded border border-secondary bg-dark">
+        <h6 class="text-warning text-uppercase mb-2">Stock actual vs mínimo por categoría</h6>
+        <div class="chart-box">
+          <canvas baseChart type="radar" [data]="stockData" [options]="stockOptions"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- grafico polar area: pedidos por estado -->
+    <div class="col-lg-6">
+      <div class="chart-card p-3 rounded border border-secondary bg-dark">
+        <h6 class="text-warning text-uppercase mb-2">Pedidos por estado</h6>
+        <div class="chart-box">
+          <canvas baseChart type="polarArea" [data]="estadosData" [options]="estadosOptions"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -144,32 +144,61 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label small text-warning">NOMBRES *</label>
-                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre" />
+                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre"
+                    [class.is-invalid]="formPerfil.controls.nombre.invalid && formPerfil.controls.nombre.touched" />
+                  @if (formPerfil.controls.nombre.touched && formPerfil.controls.nombre.hasError('required')) {
+                    <div class="invalid-feedback">El nombre es obligatorio.</div>
+                  }
+                  @if (formPerfil.controls.nombre.touched && formPerfil.controls.nombre.hasError('pattern')) {
+                    <div class="invalid-feedback">Solo letras, espacios, apóstrofo o guion (2 a 50 caracteres).</div>
+                  }
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label small text-warning">APELLIDOS *</label>
-                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido" />
+                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido"
+                    [class.is-invalid]="formPerfil.controls.apellido.invalid && formPerfil.controls.apellido.touched" />
+                  @if (formPerfil.controls.apellido.touched && formPerfil.controls.apellido.hasError('required')) {
+                    <div class="invalid-feedback">El apellido es obligatorio.</div>
+                  }
+                  @if (formPerfil.controls.apellido.touched && formPerfil.controls.apellido.hasError('pattern')) {
+                    <div class="invalid-feedback">Solo letras, espacios, apóstrofo o guion (2 a 50 caracteres).</div>
+                  }
                 </div>
 
                 <div class="col-md-4">
                   <label class="form-label small text-warning">TELÉFONO</label>
-                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="telefono" />
+                  <input type="text" maxlength="15" class="form-control bg-dark text-white border-secondary" formControlName="telefono"
+                    [class.is-invalid]="formPerfil.controls.telefono.invalid && formPerfil.controls.telefono.touched" />
+                  @if (formPerfil.controls.telefono.touched && formPerfil.controls.telefono.invalid) {
+                    <div class="invalid-feedback">Ingresa solo números (7 a 15 dígitos).</div>
+                  }
                 </div>
 
                 <div class="col-md-4">
                   <label class="form-label small text-warning">COLECCIÓN PREFERIDA</label>
-                  <select class="form-select bg-dark text-white border-secondary" formControlName="preferenciaCategoria">
+                  <select class="form-select bg-dark text-white border-secondary" formControlName="preferenciaCategoria"
+                    [class.is-invalid]="formPerfil.controls.preferenciaCategoria.invalid && formPerfil.controls.preferenciaCategoria.touched">
                     <option value="Vinos Tintos Gran Reserva">Vinos Tintos Gran Reserva</option>
                     <option value="Vinos Blancos de Guarda">Vinos Blancos de Guarda</option>
                     <option value="Piscos Puros y Mosto Verde">Piscos Puros y Mosto Verde</option>
                     <option value="Corchos Naturales y Microaglomerados">Corchos de Alcornoque</option>
                   </select>
+                  @if (formPerfil.controls.preferenciaCategoria.touched && formPerfil.controls.preferenciaCategoria.invalid) {
+                    <div class="invalid-feedback">Máximo 100 caracteres, sin &lt; ni &gt;.</div>
+                  }
                 </div>
 
                 <div class="col-md-4">
                   <label class="form-label small text-warning">PREFERENCIA DE MARIDAJE</label>
-                  <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="preferenciaMaridaje" />
+                  <input type="text" maxlength="150" class="form-control bg-dark text-white border-secondary" formControlName="preferenciaMaridaje"
+                    [class.is-invalid]="formPerfil.controls.preferenciaMaridaje.invalid && formPerfil.controls.preferenciaMaridaje.touched" />
+                  @if (formPerfil.controls.preferenciaMaridaje.touched && formPerfil.controls.preferenciaMaridaje.hasError('maxlength')) {
+                    <div class="invalid-feedback">Máximo 150 caracteres.</div>
+                  }
+                  @if (formPerfil.controls.preferenciaMaridaje.touched && formPerfil.controls.preferenciaMaridaje.hasError('pattern')) {
+                    <div class="invalid-feedback">No se permiten los caracteres &lt; o &gt;.</div>
+                  }
                 </div>
 
                 <div class="col-12 mt-3">
@@ -239,7 +268,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (pedido of historialPedidosCliente; track pedido.idPedido) {
+                  @for (pedido of historialPedidosCliente | paginate: { id: 'historialCliente', itemsPerPage: 5, currentPage: pageHistorial }; track pedido.idPedido) {
                     <tr>
                       <td class="fw-bold text-warning">{{ pedido.codigoPedido }}</td>
                       <td>{{ pedido.fechaSolicitud | date:'dd/MM/yyyy HH:mm' }}</td>
@@ -253,6 +282,14 @@
                   }
                 </tbody>
               </table>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+              <pagination-controls
+                id="historialCliente"
+                (pageChange)="pageHistorial = $event"
+                previousLabel="Anterior"
+                nextLabel="Siguiente">
+              </pagination-controls>
             </div>
           }
         </section>
@@ -274,27 +311,57 @@
           <form [formGroup]="formNuevoUsuario" (ngSubmit)="crearUsuarioDesdeAdmin()" class="row g-3">
             <div class="col-md-4">
               <label class="form-label small text-warning">NOMBRES *</label>
-              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombres" />
+              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombres"
+                [class.is-invalid]="formNuevoUsuario.controls.nombre.invalid && formNuevoUsuario.controls.nombre.touched" />
+              @if (formNuevoUsuario.controls.nombre.touched && formNuevoUsuario.controls.nombre.hasError('required')) {
+                <div class="invalid-feedback">El nombre es obligatorio.</div>
+              }
+              @if (formNuevoUsuario.controls.nombre.touched && formNuevoUsuario.controls.nombre.hasError('pattern')) {
+                <div class="invalid-feedback">Solo letras, espacios, apóstrofo o guion (2 a 50 caracteres).</div>
+              }
             </div>
             <div class="col-md-4">
               <label class="form-label small text-warning">APELLIDOS *</label>
-              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido" placeholder="Apellidos" />
+              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="apellido" placeholder="Apellidos"
+                [class.is-invalid]="formNuevoUsuario.controls.apellido.invalid && formNuevoUsuario.controls.apellido.touched" />
+              @if (formNuevoUsuario.controls.apellido.touched && formNuevoUsuario.controls.apellido.hasError('required')) {
+                <div class="invalid-feedback">El apellido es obligatorio.</div>
+              }
+              @if (formNuevoUsuario.controls.apellido.touched && formNuevoUsuario.controls.apellido.hasError('pattern')) {
+                <div class="invalid-feedback">Solo letras, espacios, apóstrofo o guion (2 a 50 caracteres).</div>
+              }
             </div>
             <div class="col-md-4">
               <label class="form-label small text-warning">DNI (8 DÍGITOS) *</label>
-              <input type="text" maxlength="8" class="form-control bg-dark text-white border-secondary" formControlName="dni" placeholder="12345678" />
+              <input type="text" maxlength="8" class="form-control bg-dark text-white border-secondary" formControlName="dni" placeholder="12345678"
+                [class.is-invalid]="formNuevoUsuario.controls.dni.invalid && formNuevoUsuario.controls.dni.touched" />
+              @if (formNuevoUsuario.controls.dni.touched && formNuevoUsuario.controls.dni.invalid) {
+                <div class="invalid-feedback">Ingresa un DNI válido de 8 dígitos numéricos.</div>
+              }
             </div>
             <div class="col-md-4">
               <label class="form-label small text-warning">CORREO ELECTRÓNICO *</label>
-              <input type="email" class="form-control bg-dark text-white border-secondary" formControlName="email" placeholder="usuario@vitivinicolas.pe" />
+              <input type="email" class="form-control bg-dark text-white border-secondary" formControlName="email" placeholder="usuario@vitivinicolas.pe"
+                [class.is-invalid]="formNuevoUsuario.controls.email.invalid && formNuevoUsuario.controls.email.touched" />
+              @if (formNuevoUsuario.controls.email.touched && formNuevoUsuario.controls.email.invalid) {
+                <div class="invalid-feedback">Ingresa un correo electrónico válido (máx. 100 caracteres).</div>
+              }
             </div>
             <div class="col-md-3">
               <label class="form-label small text-warning">TELÉFONO</label>
-              <input type="text" class="form-control bg-dark text-white border-secondary" formControlName="telefono" placeholder="999888777" />
+              <input type="text" maxlength="15" class="form-control bg-dark text-white border-secondary" formControlName="telefono" placeholder="999888777"
+                [class.is-invalid]="formNuevoUsuario.controls.telefono.invalid && formNuevoUsuario.controls.telefono.touched" />
+              @if (formNuevoUsuario.controls.telefono.touched && formNuevoUsuario.controls.telefono.invalid) {
+                <div class="invalid-feedback">Ingresa solo números (7 a 15 dígitos).</div>
+              }
             </div>
             <div class="col-md-3">
               <label class="form-label small text-warning">CONTRASEÑA INICIAL *</label>
-              <input type="password" class="form-control bg-dark text-white border-secondary" formControlName="password" placeholder="Mín. 6 caracteres" />
+              <input type="password" class="form-control bg-dark text-white border-secondary" formControlName="password" placeholder="Mín. 6 caracteres"
+                [class.is-invalid]="formNuevoUsuario.controls.password.invalid && formNuevoUsuario.controls.password.touched" />
+              @if (formNuevoUsuario.controls.password.touched && formNuevoUsuario.controls.password.invalid) {
+                <div class="invalid-feedback">Debe contener entre 6 y 64 caracteres.</div>
+              }
             </div>
             <div class="col-md-2">
               <label class="form-label small text-warning">ROL ASIGNADO *</label>
@@ -326,7 +393,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (u of listaUsuarios; track u.idUsuario) {
+                @for (u of listaUsuarios | paginate: { id: 'usuarios', itemsPerPage: 8, currentPage: pageUsuarios }; track u.idUsuario) {
                   <tr>
                     <td>#{{ u.idUsuario }}</td>
                     <td>{{ u.nombre }} {{ u.apellido }}</td>
@@ -337,6 +404,14 @@
                 }
               </tbody>
             </table>
+          </div>
+          <div class="d-flex justify-content-center mt-3">
+            <pagination-controls
+              id="usuarios"
+              (pageChange)="pageUsuarios = $event"
+              previousLabel="Anterior"
+              nextLabel="Siguiente">
+            </pagination-controls>
           </div>
         </section>
       }
@@ -359,15 +434,36 @@
               <h6 class="text-warning text-uppercase mb-3">Sedes y Sucursales Registradas</h6>
               <form [formGroup]="formNuevaSucursal" (ngSubmit)="crearSucursalDesdeAdmin()" class="row g-2 mb-3">
                 <div class="col-md-4">
-                  <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombre de sucursal *" />
+                  <input type="text" maxlength="100" class="form-control form-control-sm bg-dark text-white border-secondary" formControlName="nombre" placeholder="Nombre de sucursal *"
+                    [class.is-invalid]="formNuevaSucursal.controls.nombre.invalid && formNuevaSucursal.controls.nombre.touched" />
+                  @if (formNuevaSucursal.controls.nombre.touched && formNuevaSucursal.controls.nombre.hasError('required')) {
+                    <div class="invalid-feedback">El nombre es obligatorio.</div>
+                  }
+                  @if (formNuevaSucursal.controls.nombre.touched && formNuevaSucursal.controls.nombre.hasError('maxlength')) {
+                    <div class="invalid-feedback">Máximo 100 caracteres.</div>
+                  }
+                  @if (formNuevaSucursal.controls.nombre.touched && formNuevaSucursal.controls.nombre.hasError('pattern')) {
+                    <div class="invalid-feedback">No se permiten los caracteres &lt; o &gt;.</div>
+                  }
                 </div>
                 <div class="col-md-5">
-                  <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" formControlName="direccion" placeholder="Dirección *" />
+                  <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" formControlName="direccion" placeholder="Dirección *"
+                    [class.is-invalid]="formNuevaSucursal.controls.direccion.invalid && formNuevaSucursal.controls.direccion.touched" />
+                  @if (formNuevaSucursal.controls.direccion.touched && formNuevaSucursal.controls.direccion.hasError('required')) {
+                    <div class="invalid-feedback">La dirección es obligatoria.</div>
+                  }
+                  @if (formNuevaSucursal.controls.direccion.touched && formNuevaSucursal.controls.direccion.hasError('pattern')) {
+                    <div class="invalid-feedback">No se permiten los caracteres &lt; o &gt;.</div>
+                  }
                 </div>
                 <div class="col-md-3 d-flex gap-1">
-                  <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" formControlName="telefono" placeholder="Teléfono" />
+                  <input type="text" maxlength="15" class="form-control form-control-sm bg-dark text-white border-secondary" formControlName="telefono" placeholder="Teléfono"
+                    [class.is-invalid]="formNuevaSucursal.controls.telefono.invalid && formNuevaSucursal.controls.telefono.touched" />
                   <button type="submit" class="btn btn-sm btn-warning fw-bold" [disabled]="formNuevaSucursal.invalid || guardandoSucursal">+</button>
                 </div>
+                @if (formNuevaSucursal.controls.telefono.touched && formNuevaSucursal.controls.telefono.invalid) {
+                  <div class="col-12 invalid-feedback d-block">El teléfono debe tener solo números (7 a 15 dígitos).</div>
+                }
               </form>
 
               <div class="table-responsive">
@@ -381,7 +477,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (s of listaSucursales; track s.idSucursal) {
+                    @for (s of listaSucursales | paginate: { id: 'sucursales', itemsPerPage: 5, currentPage: pageSucursales }; track s.idSucursal) {
                       <tr>
                         <td class="text-warning">#{{ s.idSucursal }}</td>
                         <td class="fw-bold">{{ s.nombre }}</td>
@@ -391,6 +487,14 @@
                     }
                   </tbody>
                 </table>
+              </div>
+              <div class="d-flex justify-content-center mt-3">
+                <pagination-controls
+                  id="sucursales"
+                  (pageChange)="pageSucursales = $event"
+                  previousLabel="Anterior"
+                  nextLabel="Siguiente">
+                </pagination-controls>
               </div>
             </div>
 

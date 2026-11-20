@@ -1,0 +1,179 @@
+<section class="almacen-panel p-4 rounded-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <span class="eyebrow">HU08 · ASIGNAR PRODUCTOS A PEDIDO</span>
+      <h3 class="mt-1 mb-0 text-white">Preparación de Pedidos y Guía de Despacho</h3>
+    </div>
+    <button type="button" class="btn btn-outline-warning btn-sm" (click)="cargarPendientes()">
+      <i class="bi bi-arrow-clockwise me-1"></i> Actualizar Lista
+    </button>
+  </div>
+
+  <!-- 8.1: pedidos pendientes de asignacion -->
+  <h6 class="text-warning text-uppercase mb-3">1. Pedidos "En preparación" pendientes de asignación</h6>
+  <div class="table-responsive border border-secondary rounded">
+    <table class="table table-dark table-hover align-middle small mb-0">
+      <thead>
+        <tr>
+          <th>CÓDIGO</th>
+          <th>CLIENTE (DNI)</th>
+          <th>SUCURSAL</th>
+          <th>IMPORTE</th>
+          <th>ESTADO</th>
+          <th class="text-end">ACCIÓN</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (pedidosPendientes.length === 0) {
+          <tr>
+            <td colspan="6" class="text-center text-white-50 py-4">No hay pedidos pendientes de asignación.</td>
+          </tr>
+        }
+        @for (p of pedidosPendientes | paginate: { id: 'pendientes', itemsPerPage: 8, currentPage: page }; track p.idPedido) {
+          <tr [class.table-active]="pedidoSeleccionado?.idPedido === p.idPedido">
+            <td class="fw-bold text-warning">{{ p.codigoPedido }}</td>
+            <td>{{ p.nombreCliente }} ({{ p.dniCliente }})</td>
+            <td>{{ p.nombreSucursal }}</td>
+            <td>S/ {{ p.importeTotal | number:'1.2-2' }}</td>
+            <td><span class="badge bg-info text-dark">{{ p.estado }}</span></td>
+            <td class="text-end">
+              <button type="button" class="btn btn-sm btn-warning fw-bold" (click)="seleccionarPedido(p)">
+                <i class="bi bi-list-check me-1"></i> Asignar
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex justify-content-center mt-3 mb-4">
+    <pagination-controls
+      id="pendientes"
+      (pageChange)="page = $event"
+      previousLabel="Anterior"
+      nextLabel="Siguiente">
+    </pagination-controls>
+  </div>
+
+  <!-- 8.2 y 8.3: detalle y ajuste de cantidades -->
+  @if (detalle) {
+    <div class="p-3 rounded border border-secondary bg-dark mb-4">
+      <div class="row g-3 align-items-start mb-3">
+        <div class="col-md-8">
+          <h6 class="text-warning text-uppercase mb-1">2. Detalle del pedido {{ detalle.codigoPedido }}</h6>
+          <small class="text-white-50">Cliente: {{ detalle.nombreCliente }} ({{ detalle.dniCliente }}) · Sucursal: {{ detalle.nombreSucursal }}</small>
+        </div>
+        <div class="col-md-4">
+          <label for="almacenOrigen" class="form-label small text-warning">ALMACÉN DE ORIGEN *</label>
+          <select
+            id="almacenOrigen"
+            class="form-select form-select-sm bg-dark text-white border-secondary"
+            [formControl]="almacenControl"
+            [class.is-invalid]="almacenControl.invalid && almacenControl.touched"
+            (change)="onCambioAlmacen()">
+            <option [ngValue]="null" disabled>Seleccione...</option>
+            @for (a of almacenes; track a.idAlmacen) {
+              <option [ngValue]="a.idAlmacen">{{ a.nombre }} ({{ a.distrito }})</option>
+            }
+          </select>
+          @if (almacenControl.touched && almacenControl.invalid) {
+            <div class="invalid-feedback">Seleccione un almacén.</div>
+          }
+        </div>
+      </div>
+
+      <form [formGroup]="asignacionForm" (ngSubmit)="confirmarAsignacion()">
+        <div class="table-responsive">
+          <table class="table table-dark align-middle small mb-0">
+            <thead>
+              <tr>
+                <th>CÓDIGO</th>
+                <th>PRODUCTO</th>
+                <th class="text-end">SOLICITADO</th>
+                <th class="text-end">STOCK DISPONIBLE</th>
+                <th>STOCK</th>
+                <th style="width: 180px;">CANTIDAD A ASIGNAR</th>
+              </tr>
+            </thead>
+            <tbody formArrayName="lineas">
+              @for (linea of detalle.lineas; track linea.idProducto; let i = $index) {
+                <tr>
+                  <td class="text-warning">{{ linea.codigoProducto }}</td>
+                  <td>{{ linea.nombreProducto }}</td>
+                  <td class="text-end">{{ linea.cantidadSolicitada }}</td>
+                  <td class="text-end">{{ linea.stockDisponible }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="linea.stockSuficiente ? 'bg-success' : 'bg-danger'">
+                      {{ linea.stockSuficiente ? 'Suficiente' : 'Insuficiente' }}
+                    </span>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      [attr.max]="maximoAsignable(linea.cantidadSolicitada, linea.stockDisponible)"
+                      class="form-control form-control-sm bg-dark text-white border-secondary"
+                      [formControlName]="i"
+                      [class.is-invalid]="lineasArray.at(i).invalid && lineasArray.at(i).touched" />
+                    @if (lineasArray.at(i).touched && lineasArray.at(i).invalid) {
+                      <div class="invalid-feedback">
+                        Entero entre 0 y {{ maximoAsignable(linea.cantidadSolicitada, linea.stockDisponible) }}.
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+          <span class="small text-white-50">Total a asignar: <strong class="text-warning">{{ totalAsignado }}</strong> unidades</span>
+          <button type="submit" class="btn btn-warning fw-bold" [disabled]="asignando">
+            <i class="bi bi-file-earmark-check me-1"></i>
+            {{ asignando ? 'ASIGNANDO...' : 'CONFIRMAR ASIGNACIÓN Y GENERAR GUÍA' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- 8.5: guia de despacho preliminar generada -->
+  @if (guiaGenerada) {
+    <div class="alert alert-success bg-dark text-light border-warning">
+      <strong class="text-warning">
+        <i class="bi bi-truck me-1"></i>
+        Guía {{ guiaGenerada.codigoGuia }} ({{ guiaGenerada.estadoGuia }}) — Pedido {{ guiaGenerada.codigoPedido }}
+      </strong>
+      <p class="small mb-2 mt-1 text-white-50">
+        Almacén: {{ guiaGenerada.nombreAlmacen }} · Generada: {{ guiaGenerada.fechaGeneracion | date:'dd/MM/yyyy HH:mm' }} ·
+        Trabajador: {{ guiaGenerada.nombreTrabajador }}
+      </p>
+      <div class="table-responsive">
+        <table class="table table-dark table-sm small mb-0">
+          <thead>
+            <tr>
+              <th>CÓDIGO</th>
+              <th>PRODUCTO</th>
+              <th class="text-end">SOLICITADO</th>
+              <th class="text-end">ASIGNADO</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of guiaGenerada.detalles; track d.idDetalle) {
+              <tr>
+                <td class="text-warning">{{ d.codigoProducto }}</td>
+                <td>{{ d.nombreProducto }}</td>
+                <td class="text-end">{{ d.cantidadSolicitada }}</td>
+                <td class="text-end fw-bold">{{ d.cantidadAsignada }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (guiaGenerada.notificacion) {
+        <p class="small mb-0 mt-2 text-white-50">{{ guiaGenerada.notificacion }}</p>
+      }
+    </div>
+  }
+</section>

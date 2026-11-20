@@ -59,7 +59,7 @@
               }
 
               @if (form.controls.email.touched &&
-                   form.controls.email.hasError('email')) {
+                   (form.controls.email.hasError('email') || form.controls.email.hasError('maxlength'))) {
                 <div class="invalid-feedback">
                   Introduce un correo electrónico válido.
                 </div>
@@ -93,7 +93,7 @@
               }
 
               @if (form.controls.password.touched &&
-                   form.controls.password.hasError('minlength')) {
+                   (form.controls.password.hasError('minlength') || form.controls.password.hasError('maxlength'))) {
                 <div class="invalid-feedback">
                   Debe contener al menos 6 caracteres.
                 </div>
@@ -242,7 +242,7 @@
               />
               @if (formRecuperacion.controls.nuevaPassword.touched && formRecuperacion.controls.nuevaPassword.invalid) {
                 <div class="invalid-feedback">
-                  Debe contener al menos 6 caracteres.
+                  Debe contener entre 6 y 64 caracteres.
                 </div>
               }
             </div>

@@ -7,20 +7,28 @@
   </div>
 
   <!-- 1. Búsqueda de Cliente por DNI / RUC -->
-  <div class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-end">
+  <form class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-start"
+    [formGroup]="clienteForm" (ngSubmit)="buscarCliente()">
     <div class="col-md-4">
-      <label class="form-label small text-warning">DNI DEL CLIENTE (8 DÍGITOS) *</label>
-      <div class="input-group">
+      <label for="documentoCliente" class="form-label small text-warning">DNI (8 DÍGITOS) O RUC (11 DÍGITOS) DEL CLIENTE *</label>
+      <div class="input-group has-validation">
         <input
           type="text"
-          maxlength="8"
+          id="documentoCliente"
+          maxlength="11"
           class="form-control bg-dark text-white border-secondary"
-          placeholder="Ingrese DNI del cliente..."
-          [(ngModel)]="documentoBusqueda"
-          (keyup.enter)="buscarClientePorDni()" />
-        <button type="button" class="btn btn-warning fw-bold" (click)="buscarClientePorDni()">
+          placeholder="Ingrese DNI o RUC del cliente..."
+          formControlName="documento"
+          [class.is-invalid]="clienteForm.controls.documento.invalid && clienteForm.controls.documento.touched" />
+        <button type="submit" class="btn btn-warning fw-bold">
           <i class="bi bi-search me-1"></i> Buscar
         </button>
+        @if (clienteForm.controls.documento.touched && clienteForm.controls.documento.hasError('required')) {
+          <div class="invalid-feedback">El documento del cliente es obligatorio.</div>
+        }
+        @if (clienteForm.controls.documento.touched && clienteForm.controls.documento.hasError('dniORuc')) {
+          <div class="invalid-feedback">Ingrese un DNI de 8 dígitos o un RUC de 11 dígitos (10, 15, 17 o 20).</div>
+        }
       </div>
     </div>
 
@@ -34,23 +42,31 @@
     </div>
 
     <div class="col-md-4">
-      <label class="form-label small text-warning">RUC PARA FACTURA ELECTRÓNICA (11 DÍGITOS)</label>
+      <label for="clienteRuc" class="form-label small text-warning">RUC PARA FACTURA ELECTRÓNICA (11 DÍGITOS)</label>
       <input
         type="text"
+        id="clienteRuc"
         maxlength="11"
         class="form-control bg-dark text-white border-secondary"
         placeholder="20123456789"
-        [(ngModel)]="clienteRuc" />
+        formControlName="clienteRuc"
+        [class.is-invalid]="clienteForm.controls.clienteRuc.invalid && clienteForm.controls.clienteRuc.touched" />
+      @if (clienteForm.controls.clienteRuc.touched && clienteForm.controls.clienteRuc.invalid) {
+        <div class="invalid-feedback">El RUC debe tener 11 dígitos e iniciar con 10, 15, 17 o 20.</div>
+      }
     </div>
-  </div>
+  </form>
 
   <!-- 2. Agregar Productos al Pedido -->
-  <div class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-end">
+  <form class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-start"
+    [formGroup]="productoForm" (ngSubmit)="agregarProductoAlPedido()">
     <div class="col-md-5">
-      <label class="form-label small text-warning">PRODUCTO DEL CATÁLOGO</label>
+      <label for="idProducto" class="form-label small text-warning">PRODUCTO DEL CATÁLOGO</label>
       <select
+        id="idProducto"
         class="form-select bg-dark text-white border-secondary"
-        [(ngModel)]="idProductoSeleccionado"
+        formControlName="idProducto"
+        [class.is-invalid]="productoForm.controls.idProducto.invalid && productoForm.controls.idProducto.touched"
         (change)="onCambioProducto()">
         <option [ngValue]="null">Seleccione un vino, pisco o corcho...</option>
         @for (p of productosDisponibles; track p.idProducto) {
@@ -59,32 +75,48 @@
           </option>
         }
       </select>
+      @if (productoForm.controls.idProducto.touched && productoForm.controls.idProducto.invalid) {
+        <div class="invalid-feedback">Seleccione un producto.</div>
+      }
     </div>
 
     <div class="col-md-2">
-      <label class="form-label small text-warning">CANTIDAD</label>
+      <label for="cantidad" class="form-label small text-warning">CANTIDAD</label>
       <input
         type="number"
+        id="cantidad"
         min="1"
+        max="10000"
+        step="1"
         class="form-control bg-dark text-white border-secondary"
-        [(ngModel)]="cantidadProducto" />
+        formControlName="cantidad"
+        [class.is-invalid]="productoForm.controls.cantidad.invalid && productoForm.controls.cantidad.touched" />
+      @if (productoForm.controls.cantidad.touched && productoForm.controls.cantidad.invalid) {
+        <div class="invalid-feedback">Entero entre 1 y 10000.</div>
+      }
     </div>
 
     <div class="col-md-2">
-      <label class="form-label small text-warning">PRECIO UNIT. (S/)</label>
+      <label for="precio" class="form-label small text-warning">PRECIO UNIT. (S/)</label>
       <input
         type="number"
+        id="precio"
+        min="0.01"
         step="0.10"
         class="form-control bg-dark text-white border-secondary"
-        [(ngModel)]="precioProducto" />
+        formControlName="precio"
+        [class.is-invalid]="productoForm.controls.precio.invalid && productoForm.controls.precio.touched" />
+      @if (productoForm.controls.precio.touched && productoForm.controls.precio.invalid) {
+        <div class="invalid-feedback">El precio debe ser mayor que 0.</div>
+      }
     </div>
 
-    <div class="col-md-3">
-      <button type="button" class="btn btn-outline-warning w-100 fw-bold" (click)="agregarProductoAlPedido()">
+    <div class="col-md-3 align-self-end">
+      <button type="submit" class="btn btn-outline-warning w-100 fw-bold">
         <i class="bi bi-cart-plus me-1"></i> Agregar al Pedido
       </button>
     </div>
-  </div>
+  </form>
 
   <!-- 3. Detalle del Pedido, Descuento y Cálculo Automático -->
   <div class="row g-4">
@@ -130,24 +162,32 @@
 
     <!-- Resumen de Totales, Descuento y SUNAT -->
     <div class="col-lg-4">
-      <div class="p-3 rounded border border-secondary bg-dark">
+      <div class="p-3 rounded border border-secondary bg-dark" [formGroup]="liquidacionForm">
         <h6 class="text-warning text-uppercase mb-3">Liquidación y Comprobante</h6>
 
         <div class="mb-3">
-          <label class="form-label small text-white-50">TIPO DE DESCUENTO</label>
-          <select class="form-select form-select-sm bg-dark text-white border-secondary" [(ngModel)]="tipoDescuento">
+          <label for="tipoDescuento" class="form-label small text-white-50">TIPO DE DESCUENTO</label>
+          <select id="tipoDescuento" class="form-select form-select-sm bg-dark text-white border-secondary" formControlName="tipoDescuento">
             <option value="PORCENTAJE">Porcentaje (%)</option>
             <option value="MONTO_FIJO">Monto Fijo (S/)</option>
           </select>
         </div>
 
         <div class="mb-3">
-          <label class="form-label small text-white-50">VALOR DE DESCUENTO</label>
+          <label for="valorDescuento" class="form-label small text-white-50">VALOR DE DESCUENTO</label>
           <input
             type="number"
+            id="valorDescuento"
             min="0"
             class="form-control form-control-sm bg-dark text-white border-secondary"
-            [(ngModel)]="valorDescuento" />
+            formControlName="valorDescuento"
+            [class.is-invalid]="(liquidacionForm.controls.valorDescuento.invalid || liquidacionForm.hasError('porcentajeMaximo')) && liquidacionForm.controls.valorDescuento.touched" />
+          @if (liquidacionForm.controls.valorDescuento.touched && liquidacionForm.controls.valorDescuento.invalid) {
+            <div class="invalid-feedback">El descuento debe ser mayor o igual a 0.</div>
+          }
+          @if (liquidacionForm.controls.valorDescuento.touched && liquidacionForm.hasError('porcentajeMaximo')) {
+            <div class="invalid-feedback">El porcentaje no puede superar 100.</div>
+          }
         </div>
 
         <div class="form-check form-switch mb-3">
@@ -155,7 +195,7 @@
             class="form-check-input"
             type="checkbox"
             id="checkSunat"
-            [(ngModel)]="emitirFacturaElectronica" />
+            formControlName="emitirFacturaElectronica" />
           <label class="form-check-label small text-light" for="checkSunat">
             Emitir Factura Electrónica (Conexión SUNAT Simulada)
           </label>
@@ -226,7 +266,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (p of pedidosRecientes; track p.idPedido) {
+          @for (p of pedidosRecientes | paginate: { id: 'recientes', itemsPerPage: 5, currentPage: page }; track p.idPedido) {
             <tr>
               <td class="fw-bold text-warning">{{ p.codigoPedido }}</td>
               <td>{{ p.nombreCliente }}</td>
@@ -238,6 +278,14 @@
           }
         </tbody>
       </table>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+      <pagination-controls
+        id="recientes"
+        (pageChange)="page = $event"
+        previousLabel="Anterior"
+        nextLabel="Siguiente">
+      </pagination-controls>
     </div>
   </div>
 </section>

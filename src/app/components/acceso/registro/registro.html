@@ -40,6 +40,9 @@
                 @if (form.controls.nombre.touched && form.controls.nombre.hasError('required')) {
                   <div class="invalid-feedback">El nombre es obligatorio.</div>
                 }
+                @if (form.controls.nombre.touched && form.controls.nombre.hasError('pattern')) {
+                  <div class="invalid-feedback">Solo letras, espacios, apóstrofo o guion (2 a 50 caracteres).</div>
+                }
               </div>
 
               <!-- apellidos -->
@@ -55,6 +58,9 @@
                 />
                 @if (form.controls.apellido.touched && form.controls.apellido.hasError('required')) {
                   <div class="invalid-feedback">El apellido es obligatorio.</div>
+                }
+                @if (form.controls.apellido.touched && form.controls.apellido.hasError('pattern')) {
+                  <div class="invalid-feedback">Solo letras, espacios, apóstrofo o guion (2 a 50 caracteres).</div>
                 }
               </div>
             </div>
@@ -124,7 +130,7 @@
                   [class.is-invalid]="form.controls.password.invalid && form.controls.password.touched"
                 />
                 @if (form.controls.password.touched && form.controls.password.invalid) {
-                  <div class="invalid-feedback">Debe contener al menos 6 caracteres.</div>
+                  <div class="invalid-feedback">Debe contener entre 6 y 64 caracteres.</div>
                 }
               </div>
             </div>
@@ -154,7 +160,7 @@
                     [class.is-invalid]="form.controls.ruc.invalid && form.controls.ruc.touched"
                   />
                   @if (form.controls.ruc.touched && form.controls.ruc.invalid) {
-                    <div class="invalid-feedback">El RUC debe tener exactamente 11 dígitos.</div>
+                    <div class="invalid-feedback">El RUC debe tener 11 dígitos e iniciar con 10, 15, 17 o 20.</div>
                   }
                 </div>
 
@@ -164,9 +170,17 @@
                     type="text"
                     id="razonSocial"
                     class="form-control login-input"
+                    maxlength="150"
                     formControlName="razonSocial"
                     placeholder="Nombre de tu empresa o restaurante"
+                    [class.is-invalid]="form.controls.razonSocial.invalid && form.controls.razonSocial.touched"
                   />
+                  @if (form.controls.razonSocial.touched && form.controls.razonSocial.hasError('maxlength')) {
+                    <div class="invalid-feedback">Máximo 150 caracteres.</div>
+                  }
+                  @if (form.controls.razonSocial.touched && form.controls.razonSocial.hasError('pattern')) {
+                    <div class="invalid-feedback">No se permiten los caracteres &lt; o &gt;.</div>
+                  }
                 </div>
 
                 <div class="col-12 mb-2">
@@ -177,7 +191,11 @@
                     class="form-control login-input"
                     formControlName="direccion"
                     placeholder="Av. Principal 123, Distrito, Ciudad"
+                    [class.is-invalid]="form.controls.direccion.invalid && form.controls.direccion.touched"
                   />
+                  @if (form.controls.direccion.touched && form.controls.direccion.hasError('pattern')) {
+                    <div class="invalid-feedback">No se permiten los caracteres &lt; o &gt;.</div>
+                  }
                 </div>
               </div>
             }
@@ -224,7 +242,11 @@
                 class="form-control login-input text-center fs-4"
                 [formControl]="codigoIngresado"
                 placeholder="000000"
+                [class.is-invalid]="codigoIngresado.invalid && codigoIngresado.touched"
               />
+              @if (codigoIngresado.touched && codigoIngresado.invalid) {
+                <div class="invalid-feedback">El código debe tener exactamente 6 dígitos.</div>
+              }
             </div>
 
             @if (errorMessage) {

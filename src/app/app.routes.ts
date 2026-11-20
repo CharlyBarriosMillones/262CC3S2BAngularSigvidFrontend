@@ -6,10 +6,7 @@ import { Corchos } from './components/corchos/corchos';
 import { InicioSesion } from './components/acceso/inicio-sesion/inicio-sesion';
 import { Registro } from './components/acceso/registro/registro';
 import { Principal } from './components/principal/principal';
-import { CatalogoProductos } from './components/gestion-ventas/catalogo-productos/catalogo-productos';
-import { RegistrarPedido } from './components/gestion-ventas/registrar-pedido/registrar-pedido';
-import { RegistrarPago } from './components/gestion-ventas/registrar-pago/registrar-pago';
-import { DerivarPedido } from './components/gestion-ventas/derivar-pedido/derivar-pedido';
+import { authGuard } from './guards/auth-guards';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -18,13 +15,53 @@ export const routes: Routes = [
   {
     path: 'principal',
     component: Principal,
+    canActivate: [authGuard],
     children: [
-      { path: 'catalogo', component: CatalogoProductos },
-      { path: 'registrar-pedido', component: RegistrarPedido },
-      { path: 'registrar-pago', component: RegistrarPago },
-      { path: 'derivar-pedido', component: DerivarPedido },
-      { path: 'stock-almacen', component: DerivarPedido },
-      { path: 'sucursales', component: CatalogoProductos },
+      // modulos del panel con carga diferida (lazy) para no agrandar el bundle inicial
+      {
+        path: 'catalogo',
+        loadComponent: () =>
+          import('./components/gestion-ventas/catalogo-productos/catalogo-productos').then((m) => m.CatalogoProductos),
+      },
+      {
+        path: 'registrar-pedido',
+        loadComponent: () =>
+          import('./components/gestion-ventas/registrar-pedido/registrar-pedido').then((m) => m.RegistrarPedido),
+      },
+      {
+        path: 'registrar-pago',
+        loadComponent: () =>
+          import('./components/gestion-ventas/registrar-pago/registrar-pago').then((m) => m.RegistrarPago),
+      },
+      {
+        path: 'derivar-pedido',
+        loadComponent: () =>
+          import('./components/gestion-ventas/derivar-pedido/derivar-pedido').then((m) => m.DerivarPedido),
+      },
+      {
+        path: 'stock-almacen',
+        loadComponent: () =>
+          import('./components/gestion-almacen/consultar-stock/consultar-stock').then((m) => m.ConsultarStock),
+      },
+      {
+        path: 'asignar-pedido',
+        loadComponent: () =>
+          import('./components/gestion-almacen/asignar-pedido/asignar-pedido').then((m) => m.AsignarPedido),
+      },
+      {
+        path: 'registrar-salida',
+        loadComponent: () =>
+          import('./components/gestion-almacen/registrar-salida/registrar-salida').then((m) => m.RegistrarSalida),
+      },
+      {
+        path: 'confirmar-recepcion',
+        loadComponent: () =>
+          import('./components/gestion-ventas/confirmar-recepcion/confirmar-recepcion').then((m) => m.ConfirmarRecepcion),
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./components/dashboard/dashboard').then((m) => m.Dashboard),
+      },
     ],
   },
   { path: 'vinos', component: Vinos },

@@ -1,14 +1,16 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgxPaginationModule } from 'ngx-pagination';
 import { ProductoService } from '../../../services/producto.service';
 import { ToastService } from '../../../services/toast.service';
 import { Categoria, Marca, Producto } from '../../../model/producto';
+import { Limites, Patrones } from '../../../util/patrones';
 
 @Component({
   selector: 'app-catalogo-productos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgxPaginationModule],
   templateUrl: './catalogo-productos.html',
   styleUrl: './catalogo-productos.scss',
 })
@@ -21,12 +23,15 @@ export class CatalogoProductos implements OnInit {
   categorias: Categoria[] = [];
   marcas: Marca[] = [];
 
-  filtroCategoria: number | null = null;
-  filtroMarca: number | null = null;
-  busquedaNombre: string = '';
+  // formulario reactivo de filtros (HU03)
+  filtroForm = new FormGroup({
+    busquedaNombre: new FormControl('', [Validators.maxLength(Limites.BUSQUEDA_MAX), Validators.pattern(Patrones.BUSQUEDA)]),
+    filtroCategoria: new FormControl<number | null>(null),
+    filtroMarca: new FormControl<number | null>(null),
+  });
 
-  // Paginación (HU03)
-  paginaActual: number = 1;
+  // paginacion con ngx-pagination (HU03)
+  page: number = 1;
   itemsPorPagina: number = 6;
 
   ngOnInit(): void {
@@ -50,43 +55,27 @@ export class CatalogoProductos implements OnInit {
   }
 
   buscarProductos(): void {
+    if (this.filtroForm.invalid) {
+      this.filtroForm.markAllAsTouched();
+      return;
+    }
+    const { busquedaNombre, filtroCategoria, filtroMarca } = this.filtroForm.value;
     this.productoService
-      .listarProductos(this.filtroCategoria, this.filtroMarca, this.busquedaNombre)
+      .listarProductos(filtroCategoria ?? null, filtroMarca ?? null, (busquedaNombre ?? '').trim())
       .subscribe({
         next: (lista) => {
           this.productos = lista;
-          this.paginaActual = 1;
+          this.page = 1;
           this.cdr.detectChanges();
         },
-        error: () => {
-          this.toastService.show('Error al cargar el catálogo de productos desde Neon.', 'danger');
+        error: (err) => {
+          this.toastService.show(err.error?.message || 'Error al cargar el catálogo de productos desde Neon.', 'danger');
         },
       });
   }
 
   limpiarFiltros(): void {
-    this.filtroCategoria = null;
-    this.filtroMarca = null;
-    this.busquedaNombre = '';
+    this.filtroForm.reset({ busquedaNombre: '', filtroCategoria: null, filtroMarca: null });
     this.buscarProductos();
-  }
-
-  get totalPaginas(): number {
-    return Math.max(1, Math.ceil(this.productos.length / this.itemsPorPagina));
-  }
-
-  get paginasArray(): number[] {
-    return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
-  }
-
-  get productosPaginados(): Producto[] {
-    const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
-    return this.productos.slice(inicio, inicio + this.itemsPorPagina);
-  }
-
-  cambiarPagina(pagina: number): void {
-    if (pagina >= 1 && pagina <= this.totalPaginas) {
-      this.paginaActual = pagina;
-    }
   }
 }

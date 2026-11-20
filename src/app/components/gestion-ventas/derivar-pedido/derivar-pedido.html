@@ -9,43 +9,9 @@
     </button>
   </div>
 
-  <!-- Cuadro de Confirmación antes de ejecutar la derivación (Criterio HU06) -->
-  @if (pedidoPorConfirmar) {
-    <div class="alert alert-warning bg-dark text-white border-warning p-3 mb-4">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-          <h6 class="text-warning mb-1">
-            <i class="bi bi-exclamation-triangle-fill me-1"></i>
-            Confirmación de Derivación a Almacén
-          </h6>
-          <p class="small mb-0">
-            ¿Estás seguro de derivar el pedido <strong>{{ pedidoPorConfirmar.codigoPedido }}</strong>
-            del cliente <strong>{{ pedidoPorConfirmar.nombreCliente }}</strong> a Almacén?
-            Su estado cambiará a <strong>"En preparación"</strong> y se notificará al trabajador de almacén.
-          </p>
-        </div>
-        <div class="d-flex gap-2">
-          <button
-            type="button"
-            class="btn btn-warning fw-bold btn-sm px-3"
-            [disabled]="derivando"
-            (click)="ejecutarDerivacion()">
-            {{ derivando ? 'Derivando...' : 'Sí, Confirmar Derivación' }}
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-light btn-sm"
-            (click)="cancelarConfirmacion()">
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
   <!-- Tabla de Pedidos con Estado "Pagado" -->
   <h6 class="text-warning text-uppercase mb-3">1. Pedidos con Estado "Pagado" (Pendientes de Derivación)</h6>
-  <div class="table-responsive border border-secondary rounded mb-4">
+  <div class="table-responsive border border-secondary rounded">
     <table class="table table-dark table-hover align-middle small mb-0">
       <thead>
         <tr>
@@ -66,7 +32,7 @@
             </td>
           </tr>
         }
-        @for (p of pedidosPagados; track p.idPedido) {
+        @for (p of pedidosPagados | paginate: { id: 'pagados', itemsPerPage: 8, currentPage: pagePagados }; track p.idPedido) {
           <tr>
             <td class="fw-bold text-warning">{{ p.codigoPedido }}</td>
             <td>{{ (p.fechaPago || p.fechaSolicitud) | date:'dd/MM/yyyy HH:mm' }}</td>
@@ -78,7 +44,8 @@
               <button
                 type="button"
                 class="btn btn-sm btn-warning fw-bold"
-                (click)="solicitarConfirmacionDerivacion(p)">
+                [disabled]="derivando"
+                (click)="derivarPedido(p)">
                 <i class="bi bi-box-arrow-in-right me-1"></i> Derivar a almacén
               </button>
             </td>
@@ -86,6 +53,14 @@
         }
       </tbody>
     </table>
+  </div>
+  <div class="d-flex justify-content-center mt-3 mb-4">
+    <pagination-controls
+      id="pagados"
+      (pageChange)="pagePagados = $event"
+      previousLabel="Anterior"
+      nextLabel="Siguiente">
+    </pagination-controls>
   </div>
 
   <!-- Tabla de Pedidos ya Derivados ("En preparación") -->
@@ -109,7 +84,7 @@
             </td>
           </tr>
         }
-        @for (p of pedidosEnPreparacion; track p.idPedido) {
+        @for (p of pedidosEnPreparacion | paginate: { id: 'preparacion', itemsPerPage: 8, currentPage: pagePreparacion }; track p.idPedido) {
           <tr>
             <td class="fw-bold text-warning">{{ p.codigoPedido }}</td>
             <td>{{ p.nombreCliente }}</td>
@@ -120,5 +95,13 @@
         }
       </tbody>
     </table>
+  </div>
+  <div class="d-flex justify-content-center mt-3">
+    <pagination-controls
+      id="preparacion"
+      (pageChange)="pagePreparacion = $event"
+      previousLabel="Anterior"
+      nextLabel="Siguiente">
+    </pagination-controls>
   </div>
 </section>

@@ -12,22 +12,31 @@
   </div>
 
   <!-- Buscador de Pedido por Número o DNI del Cliente -->
-  <div class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-end">
+  <form class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-start"
+    [formGroup]="busquedaForm" (ngSubmit)="buscarPedidos()">
     <div class="col-md-8">
-      <label class="form-label small text-warning">BUSCAR PEDIDO POR CÓDIGO (PED-2026-XXXX) O DNI DEL CLIENTE</label>
+      <label for="terminoBusqueda" class="form-label small text-warning">BUSCAR PEDIDO POR CÓDIGO (PED-2026-XXXX) O DNI DEL CLIENTE</label>
       <input
         type="text"
+        id="terminoBusqueda"
+        maxlength="50"
         class="form-control bg-dark text-white border-secondary"
         placeholder="Ej. PED-2026-0001 o DNI 12345678..."
-        [(ngModel)]="terminoBusqueda"
-        (keyup.enter)="buscarPedidos()" />
+        formControlName="termino"
+        [class.is-invalid]="busquedaForm.controls.termino.invalid && busquedaForm.controls.termino.touched" />
+      @if (busquedaForm.controls.termino.touched && busquedaForm.controls.termino.hasError('maxlength')) {
+        <div class="invalid-feedback">Máximo 50 caracteres.</div>
+      }
+      @if (busquedaForm.controls.termino.touched && busquedaForm.controls.termino.hasError('pattern')) {
+        <div class="invalid-feedback">Solo letras, números, espacios, apóstrofo o guion.</div>
+      }
     </div>
-    <div class="col-md-4">
-      <button type="button" class="btn btn-warning w-100 fw-bold" (click)="buscarPedidos()">
+    <div class="col-md-4 align-self-end">
+      <button type="submit" class="btn btn-warning w-100 fw-bold">
         <i class="bi bi-search me-1"></i> Buscar Pedido
       </button>
     </div>
-  </div>
+  </form>
 
   <div class="row g-4">
     <!-- Tabla de Pedidos -->
@@ -44,7 +53,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (p of pedidosEncontrados; track p.idPedido) {
+            @for (p of pedidosEncontrados | paginate: { id: 'pedidosPago', itemsPerPage: 8, currentPage: pagePedidos }; track p.idPedido) {
               <tr [class.table-active]="pedidoSeleccionado?.idPedido === p.idPedido">
                 <td class="fw-bold text-warning">{{ p.codigoPedido }}</td>
                 <td>{{ p.nombreCliente }} ({{ p.dniCliente }})</td>
@@ -73,11 +82,19 @@
           </tbody>
         </table>
       </div>
+      <div class="d-flex justify-content-center mt-3">
+        <pagination-controls
+          id="pedidosPago"
+          (pageChange)="pagePedidos = $event"
+          previousLabel="Anterior"
+          nextLabel="Siguiente">
+        </pagination-controls>
+      </div>
     </div>
 
     <!-- Formulario de Registro de Pago -->
     <div class="col-lg-5">
-      <div class="p-3 rounded border border-secondary bg-dark">
+      <div class="p-3 rounded border border-secondary bg-dark" [formGroup]="pagoForm">
         <h6 class="text-warning text-uppercase mb-3">Procesar Cobro</h6>
 
         @if (!pedidoSeleccionado) {
@@ -101,22 +118,44 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label small text-warning">MÉTODO DE PAGO *</label>
-            <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="metodoSeleccionado">
+            <label for="metodoPago" class="form-label small text-warning">MÉTODO DE PAGO *</label>
+            <select id="metodoPago" class="form-select bg-dark text-white border-secondary" formControlName="metodo">
               <option value="Efectivo">Efectivo</option>
               <option value="Tarjeta">Tarjeta</option>
               <option value="Transferencia">Transferencia</option>
             </select>
           </div>
 
-          @if (metodoSeleccionado === 'Efectivo') {
+          <div class="mb-3">
+            <label for="idCaja" class="form-label small text-warning">CAJA *</label>
+            <select
+              id="idCaja"
+              class="form-select bg-dark text-white border-secondary"
+              formControlName="idCaja"
+              [class.is-invalid]="pagoForm.controls.idCaja.invalid && pagoForm.controls.idCaja.touched">
+              @for (c of cajas; track c.idCaja) {
+                <option [ngValue]="c.idCaja">{{ c.nombre }}</option>
+              }
+            </select>
+            @if (pagoForm.controls.idCaja.touched && pagoForm.controls.idCaja.invalid) {
+              <div class="invalid-feedback">Seleccione una caja.</div>
+            }
+          </div>
+
+          @if (esEfectivo) {
             <div class="mb-3">
-              <label class="form-label small text-warning">MONTO RECIBIDO EN EFECTIVO (S/) *</label>
+              <label for="montoRecibido" class="form-label small text-warning">MONTO RECIBIDO EN EFECTIVO (S/) *</label>
               <input
                 type="number"
+                id="montoRecibido"
+                min="0"
                 step="0.50"
                 class="form-control bg-dark text-white border-secondary"
-                [(ngModel)]="montoRecibido" />
+                formControlName="montoRecibido"
+                [class.is-invalid]="pagoForm.controls.montoRecibido.invalid && pagoForm.controls.montoRecibido.touched" />
+              @if (pagoForm.controls.montoRecibido.touched && pagoForm.controls.montoRecibido.invalid) {
+                <div class="invalid-feedback">Ingrese un monto mayor o igual a 0.</div>
+              }
             </div>
 
             <div class="d-flex justify-content-between p-2 rounded border border-secondary mb-3">
@@ -125,21 +164,33 @@
             </div>
           } @else {
             <div class="mb-3">
-              <label class="form-label small text-warning">CÓDIGO DE OPERACIÓN / VOUCHER *</label>
+              <label for="codigoVoucher" class="form-label small text-warning">CÓDIGO DE OPERACIÓN / VOUCHER (OPCIONAL)</label>
               <input
                 type="text"
+                id="codigoVoucher"
+                maxlength="30"
                 class="form-control bg-dark text-white border-secondary"
                 placeholder="Ej. OP-994821"
-                [(ngModel)]="codigoVoucher" />
+                formControlName="codigoVoucher"
+                [class.is-invalid]="pagoForm.controls.codigoVoucher.invalid && pagoForm.controls.codigoVoucher.touched" />
+              @if (pagoForm.controls.codigoVoucher.touched && pagoForm.controls.codigoVoucher.hasError('pattern')) {
+                <div class="invalid-feedback">Solo letras, números y guiones (4 a 30 caracteres).</div>
+              }
             </div>
 
             <div class="mb-3">
-              <label class="form-label small text-warning">ADJUNTAR VOUCHER DIGITAL (IMAGEN O PDF) *</label>
+              <label for="voucherArchivo" class="form-label small text-warning">ADJUNTAR VOUCHER DIGITAL (PNG, JPEG O PDF, MÁX. 2 MB) *</label>
               <input
+                #voucherInput
                 type="file"
-                accept="image/*,.pdf"
+                id="voucherArchivo"
+                accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"
                 class="form-control form-control-sm bg-dark text-white border-secondary"
+                [class.is-invalid]="errorArchivoVoucher"
                 (change)="onAdjuntarVoucher($event)" />
+              @if (errorArchivoVoucher) {
+                <div class="invalid-feedback">{{ errorArchivoVoucher }}</div>
+              }
               @if (nombreArchivoVoucher) {
                 <small class="text-success d-block mt-1">
                   <i class="bi bi-paperclip"></i> Archivo listo: {{ nombreArchivoVoucher }}
@@ -175,4 +226,52 @@
       </p>
     </div>
   }
+
+  <!-- historial de pagos registrados -->
+  <div class="mt-4 pt-3 border-top border-secondary">
+    <h6 class="text-warning text-uppercase mb-3">Historial de Pagos</h6>
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle small mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>FECHA</th>
+            <th>PEDIDO</th>
+            <th>CLIENTE</th>
+            <th>MÉTODO</th>
+            <th>MONTO</th>
+            <th>VUELTO</th>
+            <th>VOUCHER</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (pagosRealizados.length === 0) {
+            <tr>
+              <td colspan="8" class="text-center text-white-50 py-3">Aún no hay pagos registrados.</td>
+            </tr>
+          }
+          @for (pg of pagosRealizados | paginate: { id: 'historialPagos', itemsPerPage: 5, currentPage: pagePagos }; track pg.idPago) {
+            <tr>
+              <td>{{ pg.idPago }}</td>
+              <td>{{ pg.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="fw-bold text-warning">{{ pg.codigoPedido }}</td>
+              <td>{{ pg.nombreCliente }}</td>
+              <td>{{ pg.metodoPago }}</td>
+              <td class="fw-bold">S/ {{ pg.montoPedido | number:'1.2-2' }}</td>
+              <td>S/ {{ pg.vuelto | number:'1.2-2' }}</td>
+              <td>{{ pg.codigoVoucher || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+      <pagination-controls
+        id="historialPagos"
+        (pageChange)="pagePagos = $event"
+        previousLabel="Anterior"
+        nextLabel="Siguiente">
+      </pagination-controls>
+    </div>
+  </div>
 </section>

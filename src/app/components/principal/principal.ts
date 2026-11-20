@@ -1,8 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgxPaginationModule } from 'ngx-pagination';
+import Swal from 'sweetalert2';
 import { AuthService } from '../../services/auth.service';
 import { SessionService } from '../../services/session.service';
 import { UsuarioService } from '../../services/usuario.service';
@@ -11,11 +13,12 @@ import { UserSesion } from '../../model/user-sesion';
 import { Modulo } from '../../model/modulo';
 import { Rol } from '../../model/rol';
 import { environment } from '../../environments/environment';
+import { Limites, Patrones } from '../../util/patrones';
 
 @Component({
   selector: 'app-principal',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, NgxPaginationModule],
   templateUrl: './principal.html',
   styleUrl: './principal.scss',
 })
@@ -48,31 +51,36 @@ export class Principal implements OnInit {
   guardandoPerfil = false;
   guardandoSucursal = false;
 
+  // paginacion con ngx-pagination
+  pageUsuarios: number = 1;
+  pageSucursales: number = 1;
+  pageHistorial: number = 1;
+
   formPerfil = new FormGroup({
-    nombre: new FormControl('', [Validators.required]),
-    apellido: new FormControl('', [Validators.required]),
-    telefono: new FormControl(''),
-    preferenciaCategoria: new FormControl('Vinos Tintos Gran Reserva'),
-    preferenciaMaridaje: new FormControl('Carnes rojas y quesos maduros'),
+    nombre: new FormControl('', [Validators.required, Validators.pattern(Patrones.NOMBRE)]),
+    apellido: new FormControl('', [Validators.required, Validators.pattern(Patrones.NOMBRE)]),
+    telefono: new FormControl('', [Validators.pattern(Patrones.TELEFONO)]),
+    preferenciaCategoria: new FormControl('Vinos Tintos Gran Reserva', [Validators.maxLength(100), Validators.pattern(Patrones.TEXTO_SEGURO)]),
+    preferenciaMaridaje: new FormControl('Carnes rojas y quesos maduros', [Validators.maxLength(150), Validators.pattern(Patrones.TEXTO_SEGURO)]),
     notifEstadoPedidos: new FormControl(true),
     notifPromocionesEmail: new FormControl(true),
     notifNuevasCosechas: new FormControl(false),
   });
 
   formNuevoUsuario = new FormGroup({
-    nombre: new FormControl('', [Validators.required]),
-    apellido: new FormControl('', [Validators.required]),
-    dni: new FormControl('', [Validators.required, Validators.pattern(/^\d{8}$/)]),
-    email: new FormControl('', [Validators.required, Validators.email]),
-    telefono: new FormControl(''),
-    password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    nombre: new FormControl('', [Validators.required, Validators.pattern(Patrones.NOMBRE)]),
+    apellido: new FormControl('', [Validators.required, Validators.pattern(Patrones.NOMBRE)]),
+    dni: new FormControl('', [Validators.required, Validators.pattern(Patrones.DNI)]),
+    email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(Limites.EMAIL_MAX)]),
+    telefono: new FormControl('', [Validators.pattern(Patrones.TELEFONO)]),
+    password: new FormControl('', [Validators.required, Validators.minLength(Limites.PASSWORD_MIN), Validators.maxLength(Limites.PASSWORD_MAX)]),
     idRol: new FormControl<number | null>(null, [Validators.required]),
   });
 
   formNuevaSucursal = new FormGroup({
-    nombre: new FormControl('', [Validators.required]),
-    direccion: new FormControl('', [Validators.required]),
-    telefono: new FormControl(''),
+    nombre: new FormControl('', [Validators.required, Validators.maxLength(100), Validators.pattern(Patrones.TEXTO_SEGURO)]),
+    direccion: new FormControl('', [Validators.required, Validators.pattern(Patrones.TEXTO_SEGURO)]),
+    telefono: new FormControl('', [Validators.pattern(Patrones.TELEFONO)]),
   });
 
   ngOnInit(): void {
@@ -205,10 +213,11 @@ export class Principal implements OnInit {
       .subscribe({
         next: (pedidos) => {
           this.historialPedidosCliente = pedidos;
+          this.pageHistorial = 1;
           this.cdr.detectChanges();
         },
-        error: () => {
-          this.toastService.show('No se pudo obtener el historial de pedidos.', 'warning');
+        error: (err: HttpErrorResponse) => {
+          this.toastService.show(err.error?.message || 'No se pudo obtener el historial de pedidos.', 'warning');
         },
       });
   }
@@ -234,7 +243,24 @@ export class Principal implements OnInit {
       return;
     }
 
+    Swal.fire({
+      title: '¿Está seguro de registrar la sucursal?',
+      showCancelButton: true,
+      cancelButtonText: 'No',
+      confirmButtonText: 'Si',
+      confirmButtonColor: '#000080',
+      cancelButtonColor: '#b5b4b4',
+      focusCancel: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.registrarSucursal();
+      }
+    });
+  }
+
+  private registrarSucursal(): void {
     this.guardandoSucursal = true;
+    this.cdr.detectChanges();
     const val = this.formNuevaSucursal.value;
     const payload = {
       nombre: val.nombre!.trim(),
@@ -245,14 +271,24 @@ export class Principal implements OnInit {
     this.http.post<any>(`${environment.apiUrl}/sucursales`, payload).subscribe({
       next: (nueva) => {
         this.guardandoSucursal = false;
-        this.toastService.show(`Sucursal "${nueva.nombre}" registrada en Neon.`, 'success');
+        Swal.fire({
+          icon: 'success',
+          title: 'Registrar sucursal',
+          text: `¡Se registró exitosamente la sucursal "${nueva.nombre}"!`,
+          confirmButtonColor: '#000080',
+        });
         this.formNuevaSucursal.reset();
         this.cargarSucursalesYRoles();
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.guardandoSucursal = false;
-        this.toastService.show(err.error?.message || 'Error al registrar la sucursal.', 'danger');
+        Swal.fire({
+          icon: 'error',
+          title: 'Registrar sucursal',
+          text: err.error?.message || '¡Ha ocurrido un error al registrar la sucursal!',
+          confirmButtonColor: '#b5b4b4',
+        });
         this.cdr.detectChanges();
       },
     });
@@ -317,7 +353,7 @@ export class Principal implements OnInit {
         this.toastService.show('Perfil y preferencias actualizados en Neon.', 'success');
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.guardandoPerfil = false;
         this.toastService.show(err.error?.message || 'Error al actualizar el perfil.', 'danger');
         this.cdr.detectChanges();
@@ -346,7 +382,24 @@ export class Principal implements OnInit {
       return;
     }
 
+    Swal.fire({
+      title: '¿Está seguro de registrar los datos del usuario?',
+      showCancelButton: true,
+      cancelButtonText: 'No',
+      confirmButtonText: 'Si',
+      confirmButtonColor: '#000080',
+      cancelButtonColor: '#b5b4b4',
+      focusCancel: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.registrarUsuario();
+      }
+    });
+  }
+
+  private registrarUsuario(): void {
     this.guardandoUsuario = true;
+    this.cdr.detectChanges();
     const val = this.formNuevoUsuario.value;
     const payload = {
       nombre: val.nombre,
@@ -361,14 +414,24 @@ export class Principal implements OnInit {
     this.usuarioService.crearUsuario(payload).subscribe({
       next: (nuevo) => {
         this.guardandoUsuario = false;
-        this.toastService.show(`Usuario ${nuevo.nombre} (${nuevo.nombreRol}) registrado en Neon.`, 'success');
+        Swal.fire({
+          icon: 'success',
+          title: 'Registrar usuario',
+          text: `¡Se registró exitosamente el usuario ${nuevo.nombre} (${nuevo.nombreRol})!`,
+          confirmButtonColor: '#000080',
+        });
         this.formNuevoUsuario.reset();
         this.cargarRolesYUsuarios();
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.guardandoUsuario = false;
-        this.toastService.show(err.error?.message || 'Error al registrar el usuario.', 'danger');
+        Swal.fire({
+          icon: 'error',
+          title: 'Registrar usuario',
+          text: err.error?.message || '¡Ha ocurrido un error al registrar el usuario!',
+          confirmButtonColor: '#b5b4b4',
+        });
         this.cdr.detectChanges();
       },
     });

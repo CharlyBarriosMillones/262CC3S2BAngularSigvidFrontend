@@ -1,0 +1,142 @@
+<section class="almacen-panel p-4 rounded-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <span class="eyebrow">HU07 · CONSULTAR STOCK</span>
+      <h3 class="mt-1 mb-0 text-white">Stock de Productos por Almacén</h3>
+    </div>
+    <span class="badge bg-warning text-dark fs-6">{{ stockArray.length }} registros</span>
+  </div>
+
+  <!-- buscador y filtros (7.1, 7.2) -->
+  <form class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-start"
+    [formGroup]="filtroForm" (ngSubmit)="buscarStock()">
+    <div class="col-md-4">
+      <label for="terminoStock" class="form-label small text-warning">BUSCAR POR CÓDIGO, NOMBRE O CATEGORÍA</label>
+      <input
+        type="text"
+        id="terminoStock"
+        maxlength="50"
+        class="form-control bg-dark text-white border-secondary"
+        placeholder="Ej. VIN-001, Malbec, Piscos..."
+        formControlName="termino"
+        [class.is-invalid]="filtroForm.controls.termino.invalid && filtroForm.controls.termino.touched" />
+      @if (filtroForm.controls.termino.touched && filtroForm.controls.termino.hasError('maxlength')) {
+        <div class="invalid-feedback">Máximo 50 caracteres.</div>
+      }
+      @if (filtroForm.controls.termino.touched && filtroForm.controls.termino.hasError('pattern')) {
+        <div class="invalid-feedback">Solo letras, números, espacios, apóstrofo o guion.</div>
+      }
+    </div>
+
+    <div class="col-md-2">
+      <label for="idCategoriaStock" class="form-label small text-warning">CATEGORÍA</label>
+      <select id="idCategoriaStock" class="form-select bg-dark text-white border-secondary" formControlName="idCategoria">
+        <option [ngValue]="null">Todas</option>
+        @for (c of categorias; track c.idCategoria) {
+          <option [ngValue]="c.idCategoria">{{ c.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label for="idAlmacenStock" class="form-label small text-warning">ALMACÉN</label>
+      <select id="idAlmacenStock" class="form-select bg-dark text-white border-secondary" formControlName="idAlmacen">
+        <option [ngValue]="null">Todos</option>
+        @for (a of almacenes; track a.idAlmacen) {
+          <option [ngValue]="a.idAlmacen">{{ a.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label for="idUbigeoStock" class="form-label small text-warning">UBICACIÓN (UBIGEO)</label>
+      <select id="idUbigeoStock" class="form-select bg-dark text-white border-secondary" formControlName="idUbigeo">
+        <option [ngValue]="null">Todas</option>
+        @for (u of ubigeos; track u.idUbigeo) {
+          <option [ngValue]="u.idUbigeo">{{ u.departamento }} | {{ u.provincia }} | {{ u.distrito }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label for="estadoStock" class="form-label small text-warning">ESTADO</label>
+      <select id="estadoStock" class="form-select bg-dark text-white border-secondary" formControlName="estado">
+        <option [ngValue]="null">Todos</option>
+        @for (e of estados; track e) {
+          <option [ngValue]="e">{{ e }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-12 d-flex gap-2 justify-content-end">
+      <button type="submit" class="btn btn-warning fw-bold px-4">
+        <i class="bi bi-search me-1"></i> Buscar
+      </button>
+      <button type="button" class="btn btn-outline-light" title="Limpiar filtros" (click)="limpiarFiltros()">
+        <i class="bi bi-arrow-counterclockwise"></i>
+      </button>
+    </div>
+  </form>
+
+  <!-- tabla de stock (7.3) -->
+  <div class="table-responsive border border-secondary rounded">
+    <table class="table table-dark table-hover align-middle small mb-0">
+      <thead>
+        <tr>
+          <th>CÓDIGO</th>
+          <th>PRODUCTO</th>
+          <th>CATEGORÍA</th>
+          <th>ALMACÉN / UBICACIÓN</th>
+          <th class="text-end">STOCK ACTUAL</th>
+          <th class="text-end">STOCK MÍNIMO</th>
+          <th>ESTADO</th>
+          <th>ÚLTIMA CONFIRMACIÓN</th>
+          <th class="text-end">ACCIÓN</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (stockArray.length === 0) {
+          <tr>
+            <td colspan="9" class="text-center text-white-50 py-4">No se encontró stock con los filtros seleccionados.</td>
+          </tr>
+        }
+        @for (s of stockArray | paginate: { id: 'stock', itemsPerPage: 10, currentPage: page }; track s.idStock) {
+          <tr>
+            <td class="fw-bold text-warning">{{ s.codigoProducto }}</td>
+            <td>{{ s.nombreProducto }} <small class="text-white-50 d-block">{{ s.nombreMarca }}</small></td>
+            <td>{{ s.nombreCategoria }}</td>
+            <td>{{ s.nombreAlmacen }} <small class="text-white-50 d-block">{{ s.ubicacion }}</small></td>
+            <td class="text-end fw-bold">{{ s.cantidadActual }}</td>
+            <td class="text-end">{{ s.stockMinimo }}</td>
+            <td><span class="badge" [ngClass]="claseEstado(s.estado)">{{ s.estado }}</span></td>
+            <td>
+              @if (s.fechaUltimaConfirmacion) {
+                {{ s.fechaUltimaConfirmacion | date:'dd/MM/yyyy HH:mm' }}
+                <small class="text-white-50 d-block">{{ s.usuarioConfirma }}</small>
+              } @else {
+                <span class="text-white-50">Sin confirmar</span>
+              }
+            </td>
+            <td class="text-end">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-warning"
+                [disabled]="confirmandoId === s.idStock"
+                (click)="confirmarStock(s)">
+                <i class="bi bi-check2-square me-1"></i> Confirmar stock
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex justify-content-center mt-3">
+    <pagination-controls
+      id="stock"
+      (pageChange)="page = $event"
+      previousLabel="Anterior"
+      nextLabel="Siguiente">
+    </pagination-controls>
+  </div>
+</section>

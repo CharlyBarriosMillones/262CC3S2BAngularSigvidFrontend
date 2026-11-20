@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { RegisterRequest } from '../../../model/api/request/register-request';
+import { Limites, Patrones } from '../../../util/patrones';
 
 @Component({
   selector: 'app-registro',
@@ -25,18 +26,18 @@ export class Registro {
 
   pasoVerificacionEmail: boolean = false;
   codigoGenerado: string = '';
-  codigoIngresado = new FormControl('', [Validators.required, Validators.minLength(6)]);
+  codigoIngresado = new FormControl('', [Validators.required, Validators.pattern(Patrones.CODIGO_VERIFICACION)]);
 
   form = new FormGroup({
-    nombre: new FormControl('', [Validators.required, Validators.maxLength(50)]),
-    apellido: new FormControl('', [Validators.required, Validators.maxLength(50)]),
-    dni: new FormControl('', [Validators.required, Validators.pattern(/^\d{8}$/)]),
-    telefono: new FormControl('', [Validators.pattern(/^\d{7,15}$/)]),
-    email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(100)]),
-    password: new FormControl('', [Validators.required, Validators.minLength(6)]),
-    ruc: new FormControl('', [Validators.pattern(/^\d{11}$/)]),
-    razonSocial: new FormControl('', [Validators.maxLength(150)]),
-    direccion: new FormControl(''),
+    nombre: new FormControl('', [Validators.required, Validators.maxLength(50), Validators.pattern(Patrones.NOMBRE)]),
+    apellido: new FormControl('', [Validators.required, Validators.maxLength(50), Validators.pattern(Patrones.NOMBRE)]),
+    dni: new FormControl('', [Validators.required, Validators.pattern(Patrones.DNI)]),
+    telefono: new FormControl('', [Validators.pattern(Patrones.TELEFONO)]),
+    email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(Limites.EMAIL_MAX)]),
+    password: new FormControl('', [Validators.required, Validators.minLength(Limites.PASSWORD_MIN), Validators.maxLength(Limites.PASSWORD_MAX)]),
+    ruc: new FormControl('', [Validators.pattern(Patrones.RUC)]),
+    razonSocial: new FormControl('', [Validators.maxLength(150), Validators.pattern(Patrones.TEXTO_SEGURO)]),
+    direccion: new FormControl('', [Validators.pattern(Patrones.TEXTO_SEGURO)]),
   });
 
   toggleDatosEmpresa(): void {

@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
+import { Limites, Patrones } from '../../../util/patrones';
 
 @Component({
   selector: 'app-inicio-sesion',
@@ -24,15 +25,15 @@ export class InicioSesion implements OnInit {
   modoRecuperacion: boolean = false;
 
   form = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(Limites.EMAIL_MAX)]),
+    password: new FormControl('', [Validators.required, Validators.minLength(Limites.PASSWORD_MIN), Validators.maxLength(Limites.PASSWORD_MAX)]),
     recordarSesion: new FormControl(true),
   });
 
   formRecuperacion = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
-    dni: new FormControl('', [Validators.required, Validators.pattern(/^\d{8}$/)]),
-    nuevaPassword: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(Limites.EMAIL_MAX)]),
+    dni: new FormControl('', [Validators.required, Validators.pattern(Patrones.DNI)]),
+    nuevaPassword: new FormControl('', [Validators.required, Validators.minLength(Limites.PASSWORD_MIN), Validators.maxLength(Limites.PASSWORD_MAX)]),
   });
 
   ngOnInit(): void {
