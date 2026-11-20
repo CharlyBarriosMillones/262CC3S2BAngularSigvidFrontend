@@ -9,28 +9,40 @@
     </span>
   </div>
 
-  <!-- Barra de filtros por Categoría, Marca y Buscador por Nombre -->
-  <div class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-end">
+  <!-- Barra de filtros reactivos por Categoría, Marca y Buscador por Nombre -->
+  <form
+    [formGroup]="filtroForm"
+    (ngSubmit)="buscarProductos()"
+    class="row g-3 mb-4 p-3 rounded border border-secondary bg-dark bg-opacity-50 align-items-start">
     <div class="col-md-4">
-      <label class="form-label small text-warning">BUSCAR POR NOMBRE O CÓDIGO</label>
+      <label for="busquedaNombre" class="form-label small text-warning">BUSCAR POR NOMBRE O CÓDIGO</label>
       <div class="input-group">
         <span class="input-group-text bg-dark text-warning border-secondary">
           <i class="bi bi-search"></i>
         </span>
         <input
           type="text"
+          id="busquedaNombre"
+          maxlength="50"
           class="form-control bg-dark text-white border-secondary"
           placeholder="Ej. Malbec, Quebranta, Corcho..."
-          [(ngModel)]="busquedaNombre"
-          (keyup.enter)="buscarProductos()" />
+          formControlName="busquedaNombre"
+          [class.is-invalid]="filtroForm.controls.busquedaNombre.invalid && filtroForm.controls.busquedaNombre.touched" />
       </div>
+      @if (filtroForm.controls.busquedaNombre.touched && filtroForm.controls.busquedaNombre.hasError('maxlength')) {
+        <div class="text-danger small mt-1">Máximo 50 caracteres.</div>
+      }
+      @if (filtroForm.controls.busquedaNombre.touched && filtroForm.controls.busquedaNombre.hasError('pattern')) {
+        <div class="text-danger small mt-1">Solo letras, números, espacios, apóstrofo o guion.</div>
+      }
     </div>
 
     <div class="col-md-3">
-      <label class="form-label small text-warning">FILTRAR POR CATEGORÍA</label>
+      <label for="filtroCategoria" class="form-label small text-warning">FILTRAR POR CATEGORÍA</label>
       <select
+        id="filtroCategoria"
         class="form-select bg-dark text-white border-secondary"
-        [(ngModel)]="filtroCategoria"
+        formControlName="filtroCategoria"
         (change)="buscarProductos()">
         <option [ngValue]="null">Todas las categorías</option>
         @for (cat of categorias; track cat.idCategoria) {
@@ -40,10 +52,11 @@
     </div>
 
     <div class="col-md-3">
-      <label class="form-label small text-warning">FILTRAR POR MARCA</label>
+      <label for="filtroMarca" class="form-label small text-warning">FILTRAR POR MARCA</label>
       <select
+        id="filtroMarca"
         class="form-select bg-dark text-white border-secondary"
-        [(ngModel)]="filtroMarca"
+        formControlName="filtroMarca"
         (change)="buscarProductos()">
         <option [ngValue]="null">Todas las marcas</option>
         @for (m of marcas; track m.idMarca) {
@@ -52,24 +65,24 @@
       </select>
     </div>
 
-    <div class="col-md-2 d-flex gap-2">
-      <button type="button" class="btn btn-warning fw-bold w-100" (click)="buscarProductos()">
+    <div class="col-md-2 d-flex gap-2 align-self-end">
+      <button type="submit" class="btn btn-warning fw-bold w-100">
         Filtrar
       </button>
       <button type="button" class="btn btn-outline-light" title="Limpiar filtros" (click)="limpiarFiltros()">
         <i class="bi bi-arrow-counterclockwise"></i>
       </button>
     </div>
-  </div>
+  </form>
 
   <!-- Grilla de Productos -->
-  @if (productosPaginados.length === 0) {
+  @if (productos.length === 0) {
     <div class="alert alert-secondary bg-dark text-light border-secondary text-center py-4">
       No se encontraron productos que coincidan con los filtros seleccionados.
     </div>
   } @else {
     <div class="row g-4">
-      @for (p of productosPaginados; track p.idProducto) {
+      @for (p of productos | paginate: { id: 'catalogo', itemsPerPage: itemsPorPagina, currentPage: page }; track p.idProducto) {
         <div class="col-md-6 col-lg-4">
           <div class="card h-100 bg-dark text-white border-secondary shadow-sm producto-card">
             <div class="producto-img-wrapper text-center p-3">
@@ -108,33 +121,14 @@
       }
     </div>
 
-    <!-- Controles de Paginación (HU03) -->
-    <nav class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-secondary">
-      <span class="small text-white-50">
-        Página {{ paginaActual }} de {{ totalPaginas }}
-      </span>
-      <ul class="pagination pagination-sm mb-0">
-        <li class="page-item" [class.disabled]="paginaActual === 1">
-          <button class="page-link bg-dark text-warning border-secondary" (click)="cambiarPagina(paginaActual - 1)">
-            Anterior
-          </button>
-        </li>
-        @for (pag of paginasArray; track pag) {
-          <li class="page-item" [class.active]="pag === paginaActual">
-            <button
-              class="page-link border-secondary"
-              [ngClass]="pag === paginaActual ? 'bg-warning text-dark fw-bold' : 'bg-dark text-white'"
-              (click)="cambiarPagina(pag)">
-              {{ pag }}
-            </button>
-          </li>
-        }
-        <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
-          <button class="page-link bg-dark text-warning border-secondary" (click)="cambiarPagina(paginaActual + 1)">
-            Siguiente
-          </button>
-        </li>
-      </ul>
-    </nav>
+    <!-- Controles de Paginación con ngx-pagination (HU03) -->
+    <div class="d-flex justify-content-center mt-4 pt-3 border-top border-secondary">
+      <pagination-controls
+        id="catalogo"
+        (pageChange)="page = $event"
+        previousLabel="Anterior"
+        nextLabel="Siguiente">
+      </pagination-controls>
+    </div>
   }
 </section>
