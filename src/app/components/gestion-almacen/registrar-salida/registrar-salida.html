@@ -1,1 +1,188 @@
-<p>registrar-salida works!</p>
+<section class="almacen-panel p-4 rounded-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <span class="eyebrow">HU09 · REGISTRAR SALIDA DE PRODUCTOS (QR)</span>
+      <h3 class="mt-1 mb-0 text-white">Verificación con Código QR y Despacho</h3>
+    </div>
+    <button type="button" class="btn btn-outline-warning btn-sm" (click)="cargarGuias()">
+      <i class="bi bi-arrow-clockwise me-1"></i> Actualizar Guías
+    </button>
+  </div>
+
+  <!-- 1. Guías preliminares pendientes de salida -->
+  <h6 class="text-warning text-uppercase mb-3">1. Guías de Despacho "Preliminar" (Listas para Escanear)</h6>
+  <div class="table-responsive border border-secondary rounded">
+    <table class="table table-dark table-hover align-middle small mb-0">
+      <thead>
+        <tr>
+          <th>GUÍA</th>
+          <th>PEDIDO</th>
+          <th>CLIENTE</th>
+          <th>ALMACÉN</th>
+          <th>PROGRESO QR</th>
+          <th class="text-end">ACCIÓN</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (guiasPreliminares.length === 0) {
+          <tr>
+            <td colspan="6" class="text-center text-white-50 py-4">No hay guías preliminares pendientes de despacho.</td>
+          </tr>
+        }
+        @for (g of guiasPreliminares | paginate: { id: 'guiasPrelim', itemsPerPage: 6, currentPage: pagePreliminar }; track g.idGuia) {
+          <tr [class.table-active]="guiaSeleccionada?.idGuia === g.idGuia">
+            <td class="fw-bold text-warning">{{ g.codigoGuia }}</td>
+            <td>{{ g.codigoPedido }}</td>
+            <td>{{ g.nombreCliente }}</td>
+            <td>{{ g.nombreAlmacen }}</td>
+            <td>
+              <span class="badge bg-secondary">{{ g.itemsEscaneados }} / {{ g.totalItems }} escaneados</span>
+            </td>
+            <td class="text-end">
+              <button type="button" class="btn btn-sm btn-warning fw-bold" (click)="seleccionarGuia(g)">
+                <i class="bi bi-qr-code-scan me-1"></i> Verificar QR
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex justify-content-center mt-3 mb-4">
+    <pagination-controls
+      id="guiasPrelim"
+      (pageChange)="pagePreliminar = $event"
+      previousLabel="Anterior"
+      nextLabel="Siguiente">
+    </pagination-controls>
+  </div>
+
+  <!-- 2. Escaneo QR de los productos de la guía -->
+  @if (guiaSeleccionada) {
+    <div class="p-3 rounded border border-secondary bg-dark mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+          <h6 class="text-warning text-uppercase mb-1">
+            2. Escaneo de Productos · Guía {{ guiaSeleccionada.codigoGuia }} ({{ guiaSeleccionada.codigoPedido }})
+          </h6>
+          <small class="text-white-50">
+            Almacén: {{ guiaSeleccionada.nombreAlmacen }} · Escaneados:
+            <strong class="text-warning">{{ guiaSeleccionada.itemsEscaneados }} de {{ guiaSeleccionada.totalItems }}</strong>
+          </small>
+        </div>
+
+        <!-- Lectura manual opcional con lector de código o teclado -->
+        <div class="d-flex gap-2">
+          <input
+            type="text"
+            maxlength="120"
+            class="form-control form-control-sm bg-dark text-white border-secondary"
+            placeholder="Lector QR (SIGVID|GD-...)"
+            [formControl]="codigoManualControl"
+            (keyup.enter)="escanearPorCodigoManual()" />
+          <button type="button" class="btn btn-sm btn-outline-warning" (click)="escanearPorCodigoManual()">
+            Validar
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-dark align-middle small mb-0">
+          <thead>
+            <tr>
+              <th>CÓDIGO QR</th>
+              <th>TRAMA QR</th>
+              <th>PRODUCTO</th>
+              <th class="text-end">CANTIDAD</th>
+              <th>ESTADO</th>
+              <th class="text-end">ACCIÓN</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of guiaSeleccionada.detalles; track d.idDetalle) {
+              <tr>
+                <td>
+                  @if (qrImagenes[d.idDetalle]) {
+                    <img [src]="qrImagenes[d.idDetalle]" [alt]="d.codigoQr" class="qr-thumb rounded p-1 bg-white" />
+                  }
+                </td>
+                <td class="text-warning font-monospace">{{ d.codigoQr }}</td>
+                <td>
+                  <strong>{{ d.codigoProducto }}</strong> — {{ d.nombreProducto }}
+                </td>
+                <td class="text-end fw-bold">{{ d.cantidadAsignada }}</td>
+                <td>
+                  <span class="badge" [ngClass]="d.escaneado ? 'bg-success' : 'bg-warning text-dark'">
+                    {{ d.escaneado ? 'Escaneado' : 'Pendiente' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [ngClass]="d.escaneado ? 'btn-outline-success' : 'btn-warning fw-bold'"
+                    [disabled]="d.escaneado || escaneandoId === d.idDetalle"
+                    (click)="escanearItem(d)">
+                    <i class="bi bi-qr-code-scan me-1"></i>
+                    {{ d.escaneado ? 'Verificado' : 'Escanear QR' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3">
+        <button
+          type="button"
+          class="btn btn-warning fw-bold"
+          [disabled]="!puedeConfirmarSalida || confirmandoSalida"
+          (click)="confirmarSalida()">
+          <i class="bi bi-box-seam me-1"></i>
+          {{ confirmandoSalida ? 'CONFIRMANDO SALIDA...' : 'CONFIRMAR SALIDA Y DESCONTAR STOCK' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- 3. Historial de guías despachadas -->
+  <h6 class="text-warning text-uppercase mb-3">3. Guías Despachadas ("En tránsito" / "Entregado")</h6>
+  <div class="table-responsive border border-secondary rounded">
+    <table class="table table-dark table-hover align-middle small mb-0">
+      <thead>
+        <tr>
+          <th>GUÍA</th>
+          <th>PEDIDO</th>
+          <th>CLIENTE</th>
+          <th>FECHA SALIDA</th>
+          <th>ESTADO PEDIDO</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (guiasDespachadas.length === 0) {
+          <tr>
+            <td colspan="5" class="text-center text-white-50 py-3">Aún no hay guías despachadas.</td>
+          </tr>
+        }
+        @for (gd of guiasDespachadas | paginate: { id: 'guiasDesp', itemsPerPage: 5, currentPage: pageDespachadas }; track gd.idGuia) {
+          <tr>
+            <td class="fw-bold text-warning">{{ gd.codigoGuia }}</td>
+            <td>{{ gd.codigoPedido }}</td>
+            <td>{{ gd.nombreCliente }}</td>
+            <td>{{ gd.fechaSalida | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td><span class="badge bg-info text-dark">{{ gd.estadoPedido }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex justify-content-center mt-3">
+    <pagination-controls
+      id="guiasDesp"
+      (pageChange)="pageDespachadas = $event"
+      previousLabel="Anterior"
+      nextLabel="Siguiente">
+    </pagination-controls>
+  </div>
+</section>
